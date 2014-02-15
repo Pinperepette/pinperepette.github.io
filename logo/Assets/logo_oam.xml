@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget xmlns="http://openajax.org/metadata" spec="1.0" id="tag:adobe.com,2012-03:edge:oam:compid:EDGE-34136786" name="logo" version="1">
+
+  <description type="text/html"><![CDATA[Widget Exported from Adobe Edge]]></description>
+  <category name="Adobe Edge Animation"/>
+
+  <remarks>Compatible with: InDesign CS6, Dreamweaver</remarks>
+
+  <icon src="images/Poster.png" width="400" height="250" />
+
+  <require type="other" src="logo.html" />
+
+  <require type="javascript" src="logo_edge.js" />
+  <require type="javascript" src="logo_edgeActions.js" />
+  <require type="javascript" src="logo_edgePreload.js" />
+  <require type="javascript" src="edge_includes/edge.2.0.1.min.js" />
+  <require type="javascript" src="edge_includes/jquery-1.7.1.min.js" />
+
+  <require type="image" src="images/1.png" />
+  <require type="image" src="images/2.png" />
+  <require type="image" src="images/Poster.png" />
+
+  <require type="folder" src="edge_includes" />
+  <require type="folder" src="images" />
+
+
+  <content><![CDATA[
+    <div class="EDGE-34136786"></div>
+  ]]></content>
+
+  <properties name="Properties">
+    <property name="default-width" defaultValue="400" hidden="true"/>
+    <property name="default-height" defaultValue="250" hidden="true"/>
+    <property name="resizable" defaultValue="false" hidden="true"/>
+    <property name="use-chrome-frame" defaultValue="true" hidden="true"/>
+    <property name="chrome-frame-installer" defaultValue="none" hidden="true"/>
+
+
+    <property name="html-page" defaultValue="logo.html" hidden="true"/>
+  </properties>
+
+</widget>
