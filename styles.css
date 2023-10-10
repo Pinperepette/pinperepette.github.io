@@ -1,0 +1,55 @@
+
+        body {
+            background-color: #2b2b2b; 
+            color: #ffffff; 
+            font-family: 'Courier New', monospace;
+        }
+        code {
+            background-color: #2b2b2b;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        p.lead:last-child {
+            margin-bottom: -40px; /* O qualsiasi valore negativo desideri */
+        }
+        .lead {
+            font-size: 20px;
+        }
+
+        .class-name {
+            color: #fbff04;
+            font-weight: bold;
+        }
+        .keyword {
+            color: #e0bf04;
+        }
+        .navbar {
+            background-color: #1c1c1c; 
+        }
+
+        .security {
+            color: #12e91a;
+        }
+
+        .ml {
+            color: #0b95f0; 
+            font-weight: bold;
+        }
+
+        .python {
+            color: #e0bf04; 
+            font-weight: bold;
+        }
+        .fu {
+            color: #fbff04; 
+        }
+        .pd {
+            color: rgb(238, 87, 76); 
+            font-weight: bold;
+        }
+
+        /* Testo del footer */
+        .container a {
+            color: #4caf50; 
+        }
