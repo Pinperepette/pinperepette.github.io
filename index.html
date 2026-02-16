@@ -1,95 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Pirate's Den</title>
-    <!-- Link Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinperepette — The Pirate's Den</title>
+  <meta name="description" content="Andrea Amani aka Pinperepette. Security engineer, pirata digitale. Smonto cose, studio come funzionano e scrivo quello che trovo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">The Pirate's Den</a>
-    </nav>
-    <div style="margin-top: 20px;"></div>
-    <!-- Main Content -->
-    <div class="container">
-        <h1>Welcome to <span class="fu">The Pirate's Den</span>!</h1>
-        <hr class="my-4">
-        <p class="lead">
-            <span class="flag-icon flag-icon-pirate"></span> Ahoy there! I'm <strong>The Pirate</strong>, also known as Andrea Amani.
-        </p>
-        <p class="lead">
-            I'm a <span class="security">security engineer</span> with a passion for breaking things and exploring the depths of technology. Born in '76, I've spent years navigating the complex world of cybersecurity, specializing in <span class="security">distributed systems architecture</span> and <span class="security">large-scale network infrastructures</span>. My expertise lies in developing innovative methodologies to enhance network security through <span class="security">behavioral anomaly detection</span>, <span class="security">traffic pattern analysis</span>, and <span class="security">threat intelligence correlation</span>.
-        </p>
-        <p class="lead">
-            From defending networks against well-known threats to exploring uncharted territories <span class="security">(0-day exploits)</span>, I've mastered the art of safeguarding data in transit for corporate networks. My toolkit spans <span class="security">enterprise firewalls</span>, <span class="security">intrusion detection systems</span>, <span class="security">SIEM platforms</span>, and <span class="security">custom threat hunting tools</span>. I design <span class="security">multi-layered defense architectures</span> that integrate <span class="ml">statistical analysis</span> of TCP/IP traffic with <span class="ml">behavioral modeling</span> for <span class="security">advanced persistent threat detection</span>.
-        </p>
-        <p class="lead">
-            Working on <span class="security">complex systems</span> naturally led me into <span class="ml">machine learning</span>, where I've developed expertise in <span class="ml">data pipeline architectures</span>, <span class="ml">feature engineering</span>, and <span class="ml">model deployment at scale</span>. My journey started with classical <span class="ml">ML algorithms</span>, evolved through <span class="ml">deep neural networks</span> when they were still a pain to implement from scratch, and now spans <span class="ml">ensemble methods</span>, <span class="ml">time series analysis</span>, and <span class="ml">unsupervised learning</span> for <span class="ml">anomaly detection</span>.
-        </p>
-        <p class="lead">
-            This <span class="ml">ML specialization</span> naturally evolved my skills in <span class="ml">data analysis</span> - from <span class="ml">exploratory data analysis</span> and <span class="ml">statistical hypothesis testing</span> to <span class="ml">data visualization</span> and <span class="ml">predictive modeling</span>. I work extensively with <span class="ml">big data ecosystems</span>, <span class="ml">distributed computing frameworks</span>, and <span class="ml">real-time data processing</span> pipelines. These days, thankfully, everything's packaged and ready to go, so I find myself <span class="ml">orchestrating LLMs</span> and <span class="ml">building AI-driven automation</span> like the kids do - but hey, we all deserved a bit of a break after years of fighting with gradient descent and backpropagation algorithms.
-        </p>
-        <p class="lead">
-            My coding adventures span <span class="python">multiple programming languages</span> and <span class="python">system architectures</span>, but I have a soft spot for <span class="python">Python</span> for its versatility in <span class="ml">data science</span>, <span class="security">security automation</span>, and <span class="ml">machine learning</span> workflows. You'll often find me crafting <span class="python">elegant solutions</span> to complex problems, whether it's <span class="security">network security protocols</span>, <span class="ml">distributed data processing</span>, or <span class="ml">model optimization</span>.
-        </p>
-        <h2>Personal Information</h2>
-        <p class="lead">
-            I am happily married and blessed with a daughter. Our family also includes a loyal female Maremma Shepherd named Panna and an orange tabby cat named Mismu.
-        </p>
-        <div class="col-md-6 mx-auto d-none d-lg-block">
-        <code>
-            <h1 style="margin-top: -30px; margin-bottom: -30px;"><span class="class-name">Class</span> InfoPirata():</h1>
-        <p class="lead">
-            <span class="keyword">def</span> __init__(self):
-            <span class="keyword">    self</span>.name = <span class="function-name">'Amani Andrea'</span>
-            <span class="keyword">    self</span>.alias = <span class="function-name">'Pinperepette'</span>
-            <span class="keyword">    self</span>.profession = <span class="function-name">'Pirate'</span>
-        </p>
-        </code>
-    </div>
-    </div>
-    <!-- citazione A-TEAM -->
 
-    <div class="container text-center mt-5">
-        <blockquote class="blockquote" style="font-style: italic;">
-            <p class="mb-0">'In 1976, a <span class="pd">pirate </span>was born, known as Pinperepette. Today, still wanted by the government, he survives as a mercenary. If you have a problem, that no one else can solve, and if you can find him, you can hire the pirate <span class="pd">Pinperepette.</span>'</p>
-            <footer class="blockquote-footer"><span class="python">The Pirate's Den</span></footer>
-        </blockquote>
-    </div>
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">THE PIRATE'S<span> DEN</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="https://github.com/pinperepette" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
 
-    <hr class="my-1">
-    <footer class="bg-dark text-white text-center py-3">
-        <div class="container">
-            <div class="row justify-content-center align-items-center">
-                <div class="col-md-6">
-                    <!-- Twitter Icon e Link -->
-                    <a href="https://twitter.com/Pinperepette" target="_blank" class="text-white mx-4">
-                        <i class="fab fa-twitter fa-3x"></i>
-                    </a>
-                    <!-- GitHub Icon e Link -->
-                    <a href="https://github.com/Pinperepette" target="_blank" class="text-white mx-4">
-                        <i class="fab fa-github fa-3x"></i>
-                    </a>
-                </div>
-            </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="glitch-title" data-text="PINPEREPETTE">PINPEREPETTE</h1>
+      <p class="typing-subtitle">
+        <span id="typing-text"></span><span class="typing-cursor"></span>
+      </p>
+      <p class="hero-bio">
+        Andrea Amani. Security engineer. Classe '76.<br>
+        Smonto cose, studio come funzionano e scrivo quello che trovo.
+      </p>
+    </div>
+    <div class="hero-scroll-hint">
+      <svg viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section" id="about">
+    <h2 class="section-title">// <span class="accent">About</span></h2>
+    <p class="section-subtitle">Cosa faccio quando non rompo cose</p>
+
+    <div class="bio-grid">
+
+      <div class="bio-card">
+        <div class="bio-card-icon">&#x1f6e1;</div>
+        <div class="bio-card-title">Security</div>
+        <p>Reti aziendali, anomaly detection, threat hunting. Dai firewall agli 0-day, passando per SIEM e IDS. Difendo di giorno, attacco di notte.</p>
+        <div style="margin-top: 0.75rem;">
+          <span class="tag tag-green">Network Security</span>
+          <span class="tag tag-green">Threat Intelligence</span>
+          <span class="tag tag-green">0-day</span>
         </div>
-    </footer>
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <!-- Font Awesome Script -->
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+      </div>
+
+      <div class="bio-card">
+        <div class="bio-card-icon">&#x1f9e0;</div>
+        <div class="bio-card-title">Machine Learning</div>
+        <p>Dai tempi in cui il gradient descent lo implementavi a mano. Oggi orchestro LLM come i ragazzini, ma almeno so cosa c'e' sotto il cofano.</p>
+        <div style="margin-top: 0.75rem;">
+          <span class="tag tag-purple">Deep Learning</span>
+          <span class="tag tag-purple">Anomaly Detection</span>
+          <span class="tag tag-purple">LLM</span>
+        </div>
+      </div>
+
+      <div class="bio-card">
+        <div class="bio-card-icon">&#x1f40d;</div>
+        <div class="bio-card-title">Code</div>
+        <p>Python per tutto: automazione, data science, security tooling. Quando serve qualcosa di veloce, lo scrivo. Quando serve qualcosa di elegante, lo riscrivo.</p>
+        <div style="margin-top: 0.75rem;">
+          <span class="tag tag-cyan">Python</span>
+          <span class="tag tag-cyan">Distributed Systems</span>
+          <span class="tag tag-cyan">Data Pipelines</span>
+        </div>
+      </div>
+
+      <div class="bio-card">
+        <div class="bio-card-icon">&#x1f3e0;</div>
+        <div class="bio-card-title">Off-duty</div>
+        <p>Sposato con la iena. Padre della iena figlia. Convivente con Panna (maremmano femmina) e Mismu (gatto arancione, capo indiscusso della casa).</p>
+        <div style="margin-top: 0.75rem;">
+          <span class="tag tag-orange">Panna</span>
+          <span class="tag tag-orange">Mismu</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Code Block -->
+    <div class="code-block">
+      <pre><span class="cls">class</span> <span class="fn">InfoPirata</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.name    = <span class="str">'Amani Andrea'</span>
+        self.alias   = <span class="str">'Pinperepette'</span>
+        self.role    = <span class="str">'Security Engineer'</span>
+        self.born    = <span class="str">'1976'</span>
+        self.motto   = <span class="str">'Smonto cose.'</span>
+        self.status  = <span class="str">'Wanted'</span>  <span class="comment"># since 1976</span></pre>
+    </div>
+
+    <!-- Quote -->
+    <div class="quote-block">
+      <p>'In 1976, a pirate was born, known as Pinperepette. Today, still wanted by the government, he survives as a mercenary. If you have a problem, that no one else can solve, and if you can find him, you can hire the pirate Pinperepette.'</p>
+      <cite>// The Pirate's Den</cite>
+    </div>
+
+  </section>
+
+  <!-- Blog Section -->
+  <section class="section" id="blog">
+    <h2 class="section-title">// <span class="accent">Blog</span></h2>
+    <p class="section-subtitle">Analisi tecniche, reverse engineering, e storie di famiglia</p>
+
+    <a href="https://pinperepette.github.io/signal.pirate/" class="blog-card">
+      <div class="blog-card-label">// laboratorio</div>
+      <div class="blog-card-title">SIGNAL PIRATE</div>
+      <p class="blog-card-desc">
+        Smonto gli algoritmi che controllano il tuo feed, analizzo il traffico di rete che non dovresti vedere, e racconto tutto con la matematica giusta e l'ironia sbagliata.
+      </p>
+      <div class="blog-card-cta">[ ENTRA NEL LABORATORIO ]</div>
+    </a>
+
+    <!-- Social Links -->
+    <div class="social-links">
+      <a href="https://github.com/pinperepette" target="_blank" rel="noopener" class="social-link">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a href="https://x.com/Pinperepette" target="_blank" rel="noopener" class="social-link">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X
+      </a>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>The Pirate's Den &mdash; <a href="https://github.com/pinperepette" target="_blank" rel="noopener">Andrea Amani</a> aka Pinperepette</p>
+    <p style="margin-top: 0.5rem; opacity: 0.5;">Smonto cose dal 1976.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initTypingEffect();
+      initScrollAnimations();
+    });
+
+    /* ---- Typing Effect ---- */
+    function initTypingEffect() {
+      const el = document.getElementById('typing-text');
+      if (!el) return;
+
+      const phrases = [
+        'Security Engineer.',
+        'Smonto cose.',
+        'Difendo di giorno, attacco di notte.',
+        'Wanted since 1976.'
+      ];
+
+      let phraseIndex = 0;
+      let charIndex = 0;
+      let deleting = false;
+
+      function type() {
+        const current = phrases[phraseIndex];
+
+        if (!deleting) {
+          el.textContent = current.substring(0, charIndex + 1);
+          charIndex++;
+
+          if (charIndex === current.length) {
+            setTimeout(() => { deleting = true; type(); }, 2000);
+            return;
+          }
+          setTimeout(type, 50 + Math.random() * 40);
+        } else {
+          el.textContent = current.substring(0, charIndex - 1);
+          charIndex--;
+
+          if (charIndex === 0) {
+            deleting = false;
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            setTimeout(type, 400);
+            return;
+          }
+          setTimeout(type, 30);
+        }
+      }
+
+      setTimeout(type, 800);
+    }
+
+    /* ---- Scroll Animations ---- */
+    function initScrollAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { root: null, rootMargin: '0px 0px -60px 0px', threshold: 0.1 });
+
+      document.querySelectorAll('.bio-card, .blog-card, .code-block, .quote-block').forEach(el => {
+        observer.observe(el);
+      });
+    }
+  </script>
+
 </body>
-
-</html>
-
 </html>
