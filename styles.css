@@ -155,6 +155,65 @@ body {
   margin-top: 0.5em;
 }
 
+/* ---- Bat (syntax highlight) ---- */
+.bat-container {
+  margin: 0.3em 0;
+  border: 1px solid #1a3a1a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bat-header {
+  background: #111;
+  padding: 0.3em 1em;
+  color: #338855;
+  border-bottom: 1px solid #1a3a1a;
+  display: flex;
+  justify-content: space-between;
+}
+
+.bat-header-file { color: #4dffaa; font-weight: 700; }
+.bat-header-lang { color: #338855; }
+
+.bat-line {
+  display: flex;
+  line-height: 1.5;
+}
+
+.bat-line:hover { background: rgba(0, 255, 136, 0.03); }
+
+.bat-gutter {
+  color: #2a4a2a;
+  text-align: right;
+  padding: 0 0.8em 0 0.5em;
+  user-select: none;
+  min-width: 3em;
+  border-right: 1px solid #1a3a1a;
+  flex-shrink: 0;
+}
+
+.bat-content {
+  padding: 0 0.8em;
+  flex: 1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Syntax colors */
+.syn-keyword { color: #ff6b6b; font-weight: 700; }
+.syn-string  { color: #00ff88; }
+.syn-comment { color: #2a5a2a; font-style: italic; }
+.syn-func    { color: #7c4dff; }
+.syn-class   { color: #4ecdc4; font-weight: 700; }
+.syn-number  { color: #ffaa00; }
+.syn-heading { color: #4dffaa; font-weight: 700; }
+.syn-bold    { color: #00ff88; font-weight: 700; }
+.syn-link    { color: #4ecdc4; text-decoration: underline; }
+.syn-var     { color: #ff8800; }
+.syn-op      { color: #ff6b6b; }
+.syn-shcmd   { color: #4ecdc4; }
+.syn-flag    { color: #ffaa00; }
+
 /* ---- Cookie Overlay ---- */
 .cookie-overlay {
   position: fixed;

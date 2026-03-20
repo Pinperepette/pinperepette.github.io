@@ -499,7 +499,7 @@
       if (!trimmed) { scrollToBottom(); return; }
 
       const handlers = {
-        help: cmdHelp, ls: cmdLs, cd: cmdCd, pwd: cmdPwd, cat: cmdCat,
+        help: cmdHelp, ls: cmdLs, cd: cmdCd, pwd: cmdPwd, cat: cmdCat, bat: cmdBat,
         head: cmdHead, tail: cmdTail, stat: cmdStat, find: cmdFind,
         grep: cmdGrep, wc: cmdWc, echo: cmdEcho, which: cmdWhich,
         file: cmdFile, df: cmdDf, du: cmdDu, ps: cmdPs, top: cmdTop,
@@ -539,6 +539,7 @@
         ['cd <dir>',            'Change directory'],
         ['pwd',                 'Print working directory'],
         ['cat <file>',          'Display file contents'],
+        ['bat <file>',          'Display file with syntax highlighting'],
         ['head/tail <file>',    'First/last lines'],
         ['mkdir [-p] <dir>',    'Create a directory'],
         ['rmdir <dir>',         'Remove empty directory'],
@@ -584,7 +585,7 @@
         addHTML('  <span class="text-accent">' + escapeHtml(c.padEnd(20)) + '</span>' + escapeHtml(d));
       }
       addLine('');
-      addLine(" Tip: try 'cat about.txt', 'sh skills.sh', 'man pirate', 'ls projects/'", 'text-dim');
+      addLine(" Tip: try 'bat about.txt', 'sh skills.sh', 'man pirate', 'ls projects/'", 'text-dim');
       addLine('');
     }
 
@@ -637,6 +638,99 @@
       if (!f) { addLine('cat: ' + args[0] + ': No such file or directory'); return; }
       if (f.type === 'dir') { addLine('cat: ' + args[0] + ': Is a directory'); return; }
       for (const line of f.content) { addHTML(linkify(line)); }
+    }
+
+    function cmdBat(args) {
+      if (!args.length) { addLine('bat: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f) { addLine('bat: ' + args[0] + ': No such file or directory'); return; }
+      if (f.type === 'dir') { addLine('bat: ' + args[0] + ': Is a directory'); return; }
+
+      const filename = args[0];
+      const lang = detectLang(filename);
+
+      // Build bat container
+      const container = document.createElement('div');
+      container.className = 'bat-container';
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'bat-header';
+      header.innerHTML = '<span class="bat-header-file">File: ' + escapeHtml(filename) + '</span><span class="bat-header-lang">' + escapeHtml(lang) + '</span>';
+      container.appendChild(header);
+
+      // Lines
+      for (let i = 0; i < f.content.length; i++) {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'bat-line';
+
+        const gutter = document.createElement('span');
+        gutter.className = 'bat-gutter';
+        gutter.textContent = (i + 1).toString();
+
+        const content = document.createElement('span');
+        content.className = 'bat-content';
+        content.innerHTML = highlightSyntax(f.content[i], lang);
+
+        lineEl.appendChild(gutter);
+        lineEl.appendChild(content);
+        container.appendChild(lineEl);
+      }
+
+      output.appendChild(container);
+    }
+
+    function detectLang(filename) {
+      if (filename.endsWith('.sh')) return 'Bash';
+      if (filename.endsWith('.py')) return 'Python';
+      if (filename.endsWith('.js')) return 'JavaScript';
+      if (filename.endsWith('.md')) return 'Markdown';
+      if (filename.endsWith('.html')) return 'HTML';
+      if (filename.endsWith('.txt')) return 'Plain Text';
+      if (filename.endsWith('.json')) return 'JSON';
+      if (filename === '.bashrc') return 'Bash';
+      return 'Plain Text';
+    }
+
+    function highlightSyntax(line, lang) {
+      let h = escapeHtml(line);
+
+      if (lang === 'Bash') {
+        // Comments
+        h = h.replace(/^(\s*)(#.*)$/, '$1<span class="syn-comment">$2</span>');
+        // Strings
+        h = h.replace(/(&#39;[^&#]*(?:&#39;)?|&quot;[^&]*(?:&quot;)?)/g, '<span class="syn-string">$1</span>');
+        // Keywords
+        h = h.replace(/\b(export|alias|echo|if|then|else|fi|for|do|done|while|case|esac|function|return|source)\b/g, '<span class="syn-keyword">$1</span>');
+        // Variables
+        h = h.replace(/(\$\w+|\$\{[^}]+\})/g, '<span class="syn-var">$1</span>');
+        // Flags
+        h = h.replace(/(\s)(--?\w[\w-]*)/g, '$1<span class="syn-flag">$2</span>');
+      } else if (lang === 'Python') {
+        h = h.replace(/^(\s*)(#.*)$/, '$1<span class="syn-comment">$2</span>');
+        h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;)/g, '<span class="syn-string">$1</span>');
+        h = h.replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|with|as|yield|lambda|pass|raise|True|False|None|self|print)\b/g, '<span class="syn-keyword">$1</span>');
+        h = h.replace(/\b(\d+\.?\d*)\b/g, '<span class="syn-number">$1</span>');
+      } else if (lang === 'Markdown') {
+        // Headings
+        if (h.match(/^#{1,6}\s/)) h = '<span class="syn-heading">' + h + '</span>';
+        // Bold
+        h = h.replace(/\*\*([^*]+)\*\*/g, '<span class="syn-bold">**$1**</span>');
+        // Links
+        h = h.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="terminal-link syn-link" target="_blank">$1</a>');
+        // Stars (★)
+        h = h.replace(/(★\d+)/g, '<span class="syn-number">$1</span>');
+      } else if (lang === 'Plain Text') {
+        // Key: Value pairs
+        h = h.replace(/^(\s*)(\w[\w\s]*?)(:\s+)/, '$1<span class="syn-var">$2</span>$3');
+        // URLs
+        h = h.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="terminal-link syn-link" target="_blank">$1</a>');
+        // Quoted text
+        h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;)/g, '<span class="syn-string">$1</span>');
+      }
+
+      return h;
     }
 
     function cmdHead(args) {
