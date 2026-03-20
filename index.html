@@ -386,9 +386,89 @@
       '╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚══════╝   ╚═╝      ╚═╝   ╚══════╝',
     ];
 
+    /* ---- Visitor detection ---- */
+    function detectOS() {
+      const ua = navigator.userAgent;
+      if (ua.includes('Windows NT 10')) return 'Windows 10/11';
+      if (ua.includes('Windows')) return 'Windows';
+      if (ua.includes('Mac OS X')) {
+        const v = ua.match(/Mac OS X (\d+[._]\d+)/);
+        return 'macOS' + (v ? ' ' + v[1].replace('_','.') : '');
+      }
+      if (ua.includes('Android')) return 'Android';
+      if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+      if (ua.includes('Linux')) return 'Linux';
+      return 'Unknown OS';
+    }
+
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      if (ua.includes('Firefox/')) return 'Firefox ' + (ua.match(/Firefox\/(\d+)/)||[])[1];
+      if (ua.includes('Edg/')) return 'Edge ' + (ua.match(/Edg\/(\d+)/)||[])[1];
+      if (ua.includes('Chrome/')) return 'Chrome ' + (ua.match(/Chrome\/(\d+)/)||[])[1];
+      if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari ' + (ua.match(/Version\/(\d+)/)||[])[1];
+      return 'Unknown Browser';
+    }
+
+    async function getVisitorIP() {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+      } catch { return '?.?.?.?'; }
+    }
+
     async function runBootSequence() {
+      // Start IP fetch early
+      const ipPromise = getVisitorIP();
+
       for (const l of bootLines) { addLine(l.t, l.c); await sleep(l.d || 35); }
+
+      // Visitor scan section
+      const visitorIP = await ipPromise;
+      const os = detectOS();
+      const browser = detectBrowser();
+      const lang = navigator.language || 'en-US';
+      const screen = window.screen.width + 'x' + window.screen.height;
+      const cores = navigator.hardwareConcurrency || '?';
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown';
+      const mobile = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent);
+      const connection = navigator.connection ? navigator.connection.effectiveType : 'unknown';
+
+      addLine('');
+      addLine('incoming connection detected...', 'text-bright');
       await sleep(200);
+      addLine('');
+      addLine('scanning visitor...', 'text-dim');
+      await sleep(300);
+      addLine('');
+      addLine(' ┌─────────────────────────────────────────────┐', 'text-accent');
+      addLine(' │            VISITOR FINGERPRINT               │', 'text-accent');
+      addLine(' └─────────────────────────────────────────────┘', 'text-accent');
+      addLine('');
+      addHTML('  <span class="text-accent">IP:</span>         ' + escapeHtml(visitorIP));
+      await sleep(60);
+      addHTML('  <span class="text-accent">OS:</span>         ' + escapeHtml(os));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Browser:</span>    ' + escapeHtml(browser));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Screen:</span>     ' + escapeHtml(screen));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Cores:</span>      ' + cores);
+      await sleep(60);
+      addHTML('  <span class="text-accent">Language:</span>   ' + escapeHtml(lang));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Timezone:</span>   ' + escapeHtml(tz));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Device:</span>     ' + (mobile ? 'Mobile' : 'Desktop'));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Connection:</span> ' + escapeHtml(connection));
+      addLine('');
+      await sleep(300);
+      addLine('visitor authenticated. access granted.', 'text-bright');
+      await sleep(400);
+
+      addLine('');
       for (const a of asciiArt) addAsciiLine(a);
       await sleep(150);
       addLine('');
