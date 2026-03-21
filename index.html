@@ -18,6 +18,102 @@
 </head>
 <body>
   <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:0;z-index:9999;padding:0.5em 1em;background:#00ff41;color:#000;font-weight:bold;text-decoration:none;" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Skip to main content</a>
+
+  <!-- Boot Splash Screen -->
+  <div id="boot-splash" style="position:fixed;inset:0;z-index:10000;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;color:#00ff88;overflow:hidden;">
+    <div id="boot-lines" style="width:90%;max-width:600px;font-size:13px;line-height:1.6;"></div>
+    <!-- Mobile chooser (hidden by default, shown on mobile after boot) -->
+    <div id="mode-chooser" style="display:none;text-align:center;margin-top:32px;">
+      <div style="color:#00ff88;font-size:14px;margin-bottom:20px;">Select interface mode:</div>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <button id="btn-mode-terminal" style="background:transparent;border:1px solid #00ff88;color:#00ff88;padding:16px 28px;font-family:'JetBrains Mono',monospace;font-size:14px;cursor:pointer;border-radius:4px;transition:all 0.2s;" onmouseover="this.style.background='#00ff88';this.style.color='#0a0a0a'" onmouseout="this.style.background='transparent';this.style.color='#00ff88'">
+          &gt;_ Terminal
+        </button>
+        <button id="btn-mode-classic" style="background:transparent;border:1px solid #555;color:#888;padding:16px 28px;font-family:'JetBrains Mono',monospace;font-size:14px;cursor:pointer;border-radius:4px;transition:all 0.2s;" onmouseover="this.style.background='#333';this.style.color='#fff';this.style.borderColor='#888'" onmouseout="this.style.background='transparent';this.style.color='#888';this.style.borderColor='#555'">
+          &#9638; Classic
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function() {
+    var splash = document.getElementById('boot-splash');
+    var lines = document.getElementById('boot-lines');
+    var chooser = document.getElementById('mode-chooser');
+    var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    // Check if user already chose
+    var savedMode = localStorage.getItem('pirate-ui-mode');
+    if (savedMode === 'classic') {
+      splash.style.display = 'none';
+      window.location.href = 'old-site/index.html';
+      return;
+    }
+    if (savedMode === 'terminal' && !isMobile) {
+      // Skip boot on repeat visits (desktop only)
+      splash.style.display = 'none';
+      return;
+    }
+
+    var bootMessages = [
+      ['BIOS 1.76 — Pirate Systems Inc.', 0],
+      ['Memory test... 640K OK', 150],
+      ['Detecting hardware... CPU: AMD K6-2 @ 450MHz', 200],
+      ['HDD: /dev/sda1 — 8.4GB [OK]', 120],
+      ['Loading kernel... pirates-den 4.2.0-rc1', 300],
+      ['Mounting filesystems... [OK]', 150],
+      ['Starting network... eth0: 10.0.0.1 [OK]', 200],
+      ['Starting sshd... [OK]', 100],
+      ['', 50],
+      ['     ╔══════════════════════════════════════╗', 0],
+      ['     ║   THE PIRATE\'S DEN — v4.2.0          ║', 50],
+      ['     ║   "I take things apart"              ║', 50],
+      ['     ╚══════════════════════════════════════╝', 0],
+      ['', 100],
+    ];
+
+    var idx = 0;
+    function addBootLine() {
+      if (idx >= bootMessages.length) {
+        if (isMobile) {
+          chooser.style.display = 'block';
+        } else {
+          // Desktop: auto-proceed to terminal after brief pause
+          setTimeout(function() {
+            splash.style.transition = 'opacity 0.4s';
+            splash.style.opacity = '0';
+            setTimeout(function() { splash.style.display = 'none'; }, 400);
+            localStorage.setItem('pirate-ui-mode', 'terminal');
+          }, 600);
+        }
+        return;
+      }
+      var msg = bootMessages[idx];
+      var el = document.createElement('div');
+      el.textContent = msg[0];
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 0.15s';
+      lines.appendChild(el);
+      requestAnimationFrame(function() { el.style.opacity = '1'; });
+      idx++;
+      setTimeout(addBootLine, msg[1] + 40);
+    }
+    addBootLine();
+
+    document.getElementById('btn-mode-terminal').addEventListener('click', function() {
+      localStorage.setItem('pirate-ui-mode', 'terminal');
+      splash.style.transition = 'opacity 0.4s';
+      splash.style.opacity = '0';
+      setTimeout(function() { splash.style.display = 'none'; }, 400);
+    });
+
+    document.getElementById('btn-mode-classic').addEventListener('click', function() {
+      localStorage.setItem('pirate-ui-mode', 'classic');
+      window.location.href = 'old-site/index.html';
+    });
+  })();
+  </script>
+
   <!-- Cookie Notice -->
   <div id="cookie-overlay" class="cookie-overlay" role="dialog" aria-modal="true" aria-label="Cookie consent" style="display:none;">
     <div class="cookie-box">
