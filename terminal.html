@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.ipify.org; img-src 'self' data:; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.ipify.org https://pinperepette.github.io; img-src 'self' data:; frame-ancestors 'none';">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Pinperepette — The Pirate's Den</title>
   <meta name="description" content="Andrea Amani aka Pinperepette. Security engineer, digital pirate. I take things apart, study how they work, and write about what I find.">
@@ -563,6 +563,7 @@
         free: cmdFree, lscpu: cmdLscpu, exit: cmdExit,
         nmap: cmdNmap, hexdump: cmdHexdump, crontab: cmdCrontab,
         traceroute: cmdTraceroute, john: cmdJohn, gpg: cmdGpg,
+        lynx: cmdLynx, w3m: cmdLynx, links: cmdLynx,
       };
 
       if (trimmed.match(/^(sudo\s+)?rm\s+.*-rf|^(sudo\s+)?rm\s+-rf/)) { cmdRmRf(); }
@@ -641,6 +642,9 @@
           ['ifconfig',             'Network interfaces'],
           ['ssh github',           'Open GitHub profile'],
           ['mail',                 'Contact info'],
+          ['lynx signal.pirate',   'Browse Signal Pirate articles'],
+          ['lynx signal.pirate N', 'Read article #N'],
+          ['lynx <url>',           'Text-mode web browser'],
         ]],
         ['OTHER', [
           ['whoami',               'User info'],
@@ -1057,6 +1061,167 @@
         const m = line.match(/echo\s+"(.*)"/);
         if (m) addLine(m[1]);
       }
+    }
+
+    /* ============================================
+       LYNX — Text-mode web browser (reads Signal Pirate RSS)
+       ============================================ */
+    let _lynxArticles = null; // cached after first fetch
+
+    async function cmdLynx(args) {
+      const target = (args[0] || '').toLowerCase();
+
+      // No args or help
+      if (!target || target === '--help') {
+        addLine('');
+        addLine('  lynx — text-mode web browser', 'text-bright');
+        addLine('');
+        addLine('  Usage:', 'text-dim');
+        addLine('    lynx signal.pirate          List latest articles');
+        addLine('    lynx signal.pirate 1         Read article #1');
+        addLine('    lynx signal.pirate 3         Read article #3');
+        addLine('    lynx <url>                   Fetch any URL');
+        addLine('');
+        return;
+      }
+
+      // Signal Pirate shortcut
+      if (target === 'signal.pirate' || target === 'signal' || target === 'blog') {
+        const articleNum = parseInt(args[1]);
+
+        addLine('');
+        addLine('  Connecting to pinperepette.github.io...', 'text-dim');
+        await sleep(300);
+
+        try {
+          // Fetch and cache articles
+          if (!_lynxArticles) {
+            const res = await fetch('https://pinperepette.github.io/signal.pirate/feed.xml');
+            const xml = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xml, 'text/xml');
+            const items = doc.querySelectorAll('item');
+            _lynxArticles = [];
+            items.forEach(function(item) {
+              _lynxArticles.push({
+                title: item.querySelector('title')?.textContent || '',
+                link: item.querySelector('link')?.textContent || '',
+                date: item.querySelector('pubDate')?.textContent || '',
+                desc: item.querySelector('description')?.textContent || '',
+              });
+            });
+          }
+
+          if (!_lynxArticles.length) {
+            addLine('  Error: empty feed', 'text-red');
+            return;
+          }
+
+          // Read specific article
+          if (articleNum >= 1 && articleNum <= _lynxArticles.length) {
+            var art = _lynxArticles[articleNum - 1];
+            var dateStr = art.date ? new Date(art.date).toISOString().split('T')[0] : '';
+
+            addLine('  +-' + '-'.repeat(66) + '-+');
+            addLine('  | LYNX 2.9.2 — Signal Pirate                                       |');
+            addLine('  +-' + '-'.repeat(66) + '-+');
+            addLine('');
+            addHTML('  <span class="text-bright">' + escapeHtml(art.title) + '</span>');
+            addLine('  ' + dateStr, 'text-dim');
+            addLine('');
+
+            // Wrap description text
+            var words = art.desc.split(' ');
+            var line = '  ';
+            for (var w = 0; w < words.length; w++) {
+              if ((line + words[w]).length > 72) {
+                addLine(line);
+                line = '  ' + words[w] + ' ';
+              } else {
+                line += words[w] + ' ';
+              }
+            }
+            if (line.trim()) addLine(line);
+
+            addLine('');
+            addHTML('  <a href="' + escapeHtml(art.link) + '" class="terminal-link" target="_blank" rel="noopener noreferrer">' + escapeHtml(art.link) + '</a>');
+            addLine('');
+            addLine('  [q] Back to list   [Enter] Open in browser', 'text-dim');
+            addLine('');
+            scrollToBottom();
+            return;
+          }
+
+          // List all articles
+          addLine('');
+          addLine('  +-' + '-'.repeat(66) + '-+');
+          addLine('  | LYNX 2.9.2 — Text Browser                                         |');
+          addLine('  +-' + '-'.repeat(66) + '-+');
+          addLine('');
+          addHTML('  <span class="text-bright">Signal Pirate</span> — <span class="text-dim">pinperepette.github.io/signal.pirate</span>');
+          addLine('  "Smonto cose, studio come funzionano e scrivo quello che trovo."', 'text-dim');
+          addLine('');
+
+          for (var i = 0; i < _lynxArticles.length; i++) {
+            var a = _lynxArticles[i];
+            var d = a.date ? new Date(a.date).toISOString().split('T')[0] : '';
+            var num = String(i + 1).padStart(2, ' ');
+            addHTML('  <span class="text-accent">[' + num + ']</span> <span class="text-dim">' + escapeHtml(d) + '</span>  <span class="text-bright">' + escapeHtml(a.title) + '</span>');
+
+            // Show truncated description
+            if (a.desc) {
+              var preview = a.desc.length > 80 ? a.desc.substring(0, 80) + '...' : a.desc;
+              addLine('       ' + preview, 'text-dim');
+            }
+          }
+
+          addLine('');
+          addLine('  ' + _lynxArticles.length + ' articles loaded', 'text-dim');
+          addLine('');
+          addLine('  Usage: lynx signal.pirate <n>  — read article #n', 'text-dim');
+          addLine('');
+        } catch (e) {
+          addLine('  lynx: connection failed — ' + e.message, 'text-dim');
+        }
+
+        scrollToBottom();
+        return;
+      }
+
+      // Generic URL fetch
+      if (target.startsWith('http://') || target.startsWith('https://')) {
+        addLine('');
+        addLine('  Connecting to ' + target + '...', 'text-dim');
+        await sleep(200);
+        try {
+          var res = await fetch(target);
+          var contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+            var text = await res.text();
+            // Strip HTML tags for display
+            var tmp = document.createElement('div');
+            tmp.innerHTML = text;
+            var clean = tmp.textContent || tmp.innerText || '';
+            var lines = clean.split('\n').filter(function(l) { return l.trim(); }).slice(0, 40);
+            addLine('');
+            lines.forEach(function(l) { addLine('  ' + l.substring(0, 76)); });
+            if (clean.split('\n').length > 40) addLine('  ... [truncated]', 'text-dim');
+          } else {
+            addLine('  Content-Type: ' + contentType, 'text-dim');
+            addLine('  (binary content, cannot display)', 'text-dim');
+          }
+        } catch (e) {
+          addLine('  lynx: ' + e.message, 'text-dim');
+        }
+        addLine('');
+        scrollToBottom();
+        return;
+      }
+
+      // Unknown
+      addLine('  lynx: unknown target "' + target + '"');
+      addLine('  Try: lynx signal.pirate', 'text-dim');
+      addLine('');
     }
 
     function cmdMail() {
@@ -1544,7 +1709,7 @@
         const val = cmdInput.value;
         const parts = val.split(/\s+/);
         if (parts.length <= 1) {
-          const cmds = ['help','ls','cd','pwd','cat','head','tail','mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch','stat','find','grep','wc','sort','echo','which','file','df','du','ps','top','ping','netstat','ifconfig','nano','sh','bash','mail','ssh','man','uname','env','whoami','date','cal','clear','history','id','hostname','uptime','free','lscpu','sudo','exit','nmap','hexdump','crontab','traceroute','john','gpg'];
+          const cmds = ['help','ls','cd','pwd','cat','head','tail','mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch','stat','find','grep','wc','sort','echo','which','file','df','du','ps','top','ping','netstat','ifconfig','nano','sh','bash','mail','ssh','man','uname','env','whoami','date','cal','clear','history','id','hostname','uptime','free','lscpu','sudo','exit','nmap','hexdump','crontab','traceroute','john','gpg','lynx','w3m','links'];
           const matches = cmds.filter(c => c.startsWith(parts[0]));
           if (matches.length === 1) cmdInput.value = matches[0] + ' ';
           else if (matches.length > 1) { addHTML('<span class="prompt-echo">[pirate@pirates-den ' + escapeHtml(getDisplayCwd()) + ']$ </span>' + escapeHtml(val)); addLine(matches.join('  ')); scrollToBottom(); }
