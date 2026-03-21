@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.ipify.org; img-src 'self' data:; frame-ancestors 'none';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Pinperepette — The Pirate's Den</title>
   <meta name="description" content="Andrea Amani aka Pinperepette. Security engineer, digital pirate. I take things apart, study how they work, and write about what I find.">
   <meta property="og:type" content="website">
@@ -38,7 +40,7 @@
       <div id="cookie-manage-output"></div>
       <div class="cookie-input-line">
         <span class="cookie-prompt">cookie@pirates-den&gt; </span>
-        <input type="text" id="cookie-input" class="cookie-input" autofocus autocomplete="off" spellcheck="false">
+        <input type="text" id="cookie-input" class="cookie-input" autofocus autocomplete="off" spellcheck="false" maxlength="50">
       </div>
     </div>
   </div>
@@ -47,7 +49,7 @@
     <div id="output" class="terminal-output" aria-live="polite" aria-atomic="false" role="log"></div>
     <div id="input-line" class="input-line" style="display:none;">
       <span class="prompt">[pirate@pirates-den ~]$ </span>
-      <input type="text" id="cmd-input" class="cmd-input" aria-label="Terminal command input" autofocus autocomplete="off" spellcheck="false">
+      <input type="text" id="cmd-input" class="cmd-input" aria-label="Terminal command input" autofocus autocomplete="off" spellcheck="false" maxlength="500">
     </div>
   </div>
 
@@ -537,6 +539,8 @@
        COMMAND ROUTER
        ============================================ */
     function runCommand(raw) {
+      // Secondary server-side length guard (in case maxlength attribute is bypassed)
+      if (raw.length > 500) { addLine('sh: command line too long (max 500 chars)'); scrollToBottom(); return; }
       const trimmed = raw.trim();
       const parts = trimmed.split(/\s+/);
       const cmd = parts[0];
@@ -1524,7 +1528,7 @@
     cmdInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const raw = cmdInput.value;
-        if (raw.trim()) { commandHistory.push(raw.trim()); historyIndex = commandHistory.length; }
+        if (raw.trim()) { commandHistory.push(raw.trim()); if (commandHistory.length > 100) commandHistory.shift(); historyIndex = commandHistory.length; }
         runCommand(raw);
         cmdInput.value = '';
       } else if (e.key === 'ArrowUp') {
