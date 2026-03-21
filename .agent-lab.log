@@ -1,0 +1,4 @@
+2026-03-21 10:21:01 [INFO] Agent Lab started, teams_dir=/Users/pinperepette/Porgetti/libero
+2026-03-21 10:21:31 [INFO] Agent Lab started, teams_dir=/Users/pinperepette/Porgetti/libero
+2026-03-21 10:22:28 [INFO] Agent Lab started, teams_dir=/Users/pinperepette/Porgetti/libero
+2026-03-21 10:23:11 [ERROR] Project run error: There is no current event loop in thread 'ThreadPoolExecutor-0_0'.
