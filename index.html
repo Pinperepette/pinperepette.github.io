@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.ipify.org; img-src 'self' data:; frame-ancestors 'none';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Pinperepette — The Pirate's Den</title>
   <meta name="description" content="Andrea Amani aka Pinperepette. Security engineer, digital pirate. I take things apart, study how they work, and write about what I find.">
   <meta property="og:type" content="website">
@@ -15,8 +17,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:0;z-index:9999;padding:0.5em 1em;background:#00ff41;color:#000;font-weight:bold;text-decoration:none;" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Skip to main content</a>
   <!-- Cookie Notice -->
-  <div id="cookie-overlay" class="cookie-overlay" style="display:none;">
+  <div id="cookie-overlay" class="cookie-overlay" role="dialog" aria-modal="true" aria-label="Cookie consent" style="display:none;">
     <div class="cookie-box">
       <div class="cookie-border">+--------------------------------------------------+</div>
       <div class="cookie-title">|          COOKIE NOTICE - pirates-den             |</div>
@@ -37,16 +40,16 @@
       <div id="cookie-manage-output"></div>
       <div class="cookie-input-line">
         <span class="cookie-prompt">cookie@pirates-den&gt; </span>
-        <input type="text" id="cookie-input" class="cookie-input" autofocus autocomplete="off" spellcheck="false">
+        <input type="text" id="cookie-input" class="cookie-input" autofocus autocomplete="off" spellcheck="false" maxlength="50">
       </div>
     </div>
   </div>
 
-  <div id="terminal" class="terminal">
-    <div id="output" class="terminal-output"></div>
+  <div id="terminal" class="terminal" id="main-content" lang="en">
+    <div id="output" class="terminal-output" aria-live="polite" aria-atomic="false" role="log"></div>
     <div id="input-line" class="input-line" style="display:none;">
       <span class="prompt">[pirate@pirates-den ~]$ </span>
-      <input type="text" id="cmd-input" class="cmd-input" autofocus autocomplete="off" spellcheck="false">
+      <input type="text" id="cmd-input" class="cmd-input" aria-label="Terminal command input" autofocus autocomplete="off" spellcheck="false" maxlength="500">
     </div>
   </div>
 
@@ -388,6 +391,7 @@
     function scrollToBottom() { window.scrollTo(0, document.body.scrollHeight); }
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
     function resolvePath(path) {
       if (!path) return cwd;
@@ -412,7 +416,7 @@
     }
 
     function linkify(text) {
-      return escapeHtml(text).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="terminal-link" target="_blank">$1</a>');
+      return escapeHtml(text).replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
     }
 
     /* ============================================
@@ -535,6 +539,8 @@
        COMMAND ROUTER
        ============================================ */
     function runCommand(raw) {
+      // Secondary server-side length guard (in case maxlength attribute is bypassed)
+      if (raw.length > 500) { addLine('sh: command line too long (max 500 chars)'); scrollToBottom(); return; }
       const trimmed = raw.trim();
       const parts = trimmed.split(/\s+/);
       const cmd = parts[0];
@@ -791,14 +797,14 @@
         // Bold
         h = h.replace(/\*\*([^*]+)\*\*/g, '<span class="syn-bold">**$1**</span>');
         // Links
-        h = h.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="terminal-link syn-link" target="_blank">$1</a>');
+        h = h.replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link syn-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
         // Stars (★)
         h = h.replace(/(★\d+)/g, '<span class="syn-number">$1</span>');
       } else if (lang === 'Plain Text') {
         // Key: Value pairs
         h = h.replace(/^(\s*)(\w[\w\s]*?)(:\s+)/, '$1<span class="syn-var">$2</span>$3');
         // URLs
-        h = h.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="terminal-link syn-link" target="_blank">$1</a>');
+        h = h.replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link syn-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
         // Quoted text
         h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;)/g, '<span class="syn-string">$1</span>');
       }
@@ -850,7 +856,7 @@
       if (!f || f.type !== 'file') { addLine('grep: ' + args[1] + ': No such file'); return; }
       for (const line of f.content) {
         if (line.toLowerCase().includes(pat)) {
-          addHTML(escapeHtml(line).replace(new RegExp('(' + escapeHtml(pat) + ')', 'gi'), '<span class="text-accent">$1</span>'));
+          addHTML(escapeHtml(line).replace(new RegExp('(' + escapeRegex(escapeHtml(pat)) + ')', 'gi'), '<span class="text-accent">$1</span>'));
         }
       }
     }
@@ -1057,17 +1063,17 @@
       addLine(' No new mail.', 'text-dim');
       addLine(' To contact the pirate:', 'text-dim');
       addLine('');
-      addHTML('  <span class="text-accent">GitHub</span>   <a href="https://github.com/pinperepette" class="terminal-link" target="_blank">https://github.com/pinperepette</a>');
-      addHTML('  <span class="text-accent">X</span>        <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank">https://x.com/Pinperepette</a>');
-      addHTML('  <span class="text-accent">Blog</span>     <a href="https://pinperepette.github.io/signal.pirate/" class="terminal-link" target="_blank">https://pinperepette.github.io/signal.pirate/</a>');
+      addHTML('  <span class="text-accent">GitHub</span>   <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
+      addHTML('  <span class="text-accent">X</span>        <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://x.com/Pinperepette</a>');
+      addHTML('  <span class="text-accent">Blog</span>     <a href="https://pinperepette.github.io/signal.pirate/" class="terminal-link" target="_blank" rel="noopener noreferrer">https://pinperepette.github.io/signal.pirate/</a>');
       addLine('');
     }
 
     function cmdSsh(args) {
       if (!args.length) { addLine('ssh: missing host'); return; }
       if (args[0] === 'github' || args[0] === 'github.com') {
-        addHTML('Connecting to GitHub... <a href="https://github.com/pinperepette" class="terminal-link" target="_blank">https://github.com/pinperepette</a>');
-        window.open('https://github.com/pinperepette', '_blank');
+        addHTML('Connecting to GitHub... <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
+        window.open('https://github.com/pinperepette', '_blank', 'noopener,noreferrer');
       } else { addLine('ssh: connect to host ' + args[0] + ' port 22: Connection refused'); }
     }
 
@@ -1114,7 +1120,7 @@
         addLine('');
         addHTML('<span class="text-bright">AUTHOR</span>');
         addLine('       Andrea Amani <pinperepette>');
-        addHTML('       <a href="https://github.com/pinperepette" class="terminal-link" target="_blank">https://github.com/pinperepette</a>');
+        addHTML('       <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
         addLine('');
         addHTML('<span class="text-dim">pinperepette.github.io        March 2026              PIRATE(1)</span>');
         addLine('');
@@ -1174,7 +1180,7 @@
       addLine('');
       addHTML(' <span class="text-accent">800</span> following    <span class="text-accent">16,912</span> followers');
       addLine('');
-      addHTML(' <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank">https://x.com/Pinperepette</a>');
+      addHTML(' <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://x.com/Pinperepette</a>');
       addLine('');
     }
 
@@ -1522,7 +1528,7 @@
     cmdInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const raw = cmdInput.value;
-        if (raw.trim()) { commandHistory.push(raw.trim()); historyIndex = commandHistory.length; }
+        if (raw.trim()) { commandHistory.push(raw.trim()); if (commandHistory.length > 100) commandHistory.shift(); historyIndex = commandHistory.length; }
         runCommand(raw);
         cmdInput.value = '';
       } else if (e.key === 'ArrowUp') {
