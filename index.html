@@ -558,11 +558,10 @@
         traceroute: cmdTraceroute, john: cmdJohn, gpg: cmdGpg,
       };
 
-      if (handlers[cmd]) { handlers[cmd](args); }
+      if ((cmd === 'rm' && args.join(' ').includes('-rf')) || (cmd === 'sudo' && trimmed.includes('rm') && trimmed.includes('-rf'))) { cmdRmRf(); }
+      else if (handlers[cmd]) { handlers[cmd](args); }
       else if (cmd === 'bash') { cmdSh(args); }
       else if (cmd.startsWith('./')) { cmdSh([cmd.slice(2), ...args]); }
-      else if (cmd === 'rm' && args.join(' ').includes('-rf /')) { cmdRmRf(); return; }
-      else if (cmd === 'rm' && args.join(' ').includes('-rf')) { cmdRmRf(); return; }
       else if (['mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch'].includes(cmd)) { addLine(cmd + ': permission denied'); }
       else if (cmd === 'sudo') { addLine('pirate is not in the sudoers file. This incident will be reported.'); }
       else if (cmd === 'su') { addLine('su: Authentication failure'); }
