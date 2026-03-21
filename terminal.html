@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.ipify.org; img-src 'self' data:; frame-ancestors 'none';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Pinperepette — The Pirate's Den</title>
+  <meta name="description" content="Andrea Amani aka Pinperepette. Security engineer, digital pirate. I take things apart, study how they work, and write about what I find.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pinperepette | Security Engineer">
+  <meta property="og:description" content="Security engineer since '76. Interactive Unix terminal portfolio.">
+  <meta property="og:url" content="https://pinperepette.github.io/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:0;z-index:9999;padding:0.5em 1em;background:#00ff41;color:#000;font-weight:bold;text-decoration:none;" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Skip to main content</a>
+
+  <!-- Cookie Notice -->
+  <div id="cookie-overlay" class="cookie-overlay" role="dialog" aria-modal="true" aria-label="Cookie consent" style="display:none;">
+    <div class="cookie-box">
+      <div class="cookie-border">+--------------------------------------------------+</div>
+      <div class="cookie-title">|          COOKIE NOTICE - pirates-den             |</div>
+      <div class="cookie-border">+--------------------------------------------------+</div>
+      <div class="cookie-text">
+        This site uses cookies to enhance your experience.<br>
+        We store minimal data for site functionality.
+      </div>
+      <div class="cookie-commands">
+        <div class="text-bright"> Available commands:</div>
+        <div>    <span class="text-accent">accept</span>   - Accept all cookies</div>
+        <div>    <span class="text-accent">decline</span>  - Decline optional cookies</div>
+        <div>    <span class="text-accent">manage</span>   - View cookie details</div>
+      </div>
+      <div class="cookie-docs text-dim">
+        Docs: /cookie-policy  /privacy-policy
+      </div>
+      <div id="cookie-manage-output"></div>
+      <div class="cookie-input-line">
+        <span class="cookie-prompt">cookie@pirates-den&gt; </span>
+        <input type="text" id="cookie-input" class="cookie-input" autofocus autocomplete="off" spellcheck="false" maxlength="50">
+      </div>
+    </div>
+  </div>
+
+  <div id="terminal" class="terminal" id="main-content" lang="en">
+    <div id="output" class="terminal-output" aria-live="polite" aria-atomic="false" role="log"></div>
+    <div id="input-line" class="input-line" style="display:none;">
+      <span class="prompt">[pirate@pirates-den ~]$ </span>
+      <input type="text" id="cmd-input" class="cmd-input" aria-label="Terminal command input" autofocus autocomplete="off" spellcheck="false" maxlength="500">
+    </div>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const inputLine = document.getElementById('input-line');
+    const cmdInput = document.getElementById('cmd-input');
+    let commandHistory = [];
+    let historyIndex = -1;
+    let cwd = '/home/pirate';
+
+    /* ============================================
+       FILESYSTEM
+       ============================================ */
+    const filesystem = {
+      '/home/pirate': {
+        type: 'dir',
+        children: ['about.txt', 'skills.sh', 'scan.sh', 'exploit.py', 'projects/', 'blog/', '.bashrc', '.ssh/', '.pgp_keys/']
+      },
+      '/home/pirate/about.txt': {
+        type: 'file',
+        content: [
+          '# About Me',
+          '',
+          'Name:      Andrea Amani',
+          'Alias:     Pinperepette',
+          'Role:      Security Engineer',
+          'Born:      1976, Italy',
+          'Status:    Wanted since 1976',
+          'Followers: 477 on GitHub',
+          '',
+          'I take things apart, study how they work, and write about',
+          'what I find. Defend by day, attack by night.',
+          '',
+          'P(Bug | Fix) ≠ P(Fix | Bug). Debugging → ∞. Σ(errors²) ≠ 0',
+          '',
+          '"In 1976, a pirate was born, known as Pinperepette.',
+          ' Today, still wanted by the government, he survives',
+          ' as a mercenary. If you have a problem, that no one',
+          ' else can solve, and if you can find him, you can',
+          ' hire the pirate Pinperepette."',
+        ]
+      },
+      '/home/pirate/skills.sh': {
+        type: 'file',
+        content: [
+          '#!/bin/bash',
+          '# skills.sh — Technical skill manifest',
+          '',
+          'echo "=== SECURITY ==="',
+          'echo "  Network defense, threat hunting, SIEM/IDS"',
+          'echo "  Anomaly detection, firewalls, 0-day research"',
+          'echo "  Malware analysis, persistence mechanisms"',
+          'echo ""',
+          'echo "=== MACHINE LEARNING ==="',
+          'echo "  Deep learning, anomaly detection, LLM orchestration"',
+          'echo "  Adversarial ML, AI security research"',
+          'echo "  Built gradient descent by hand since day zero"',
+          'echo ""',
+          'echo "=== CODE ==="',
+          'echo "  Python — automation, data science, security tooling"',
+          'echo "  Swift  — macOS native apps, disassemblers"',
+          'echo "  Distributed systems, data pipelines"',
+          'echo ""',
+          'echo "=== LANGUAGES ==="',
+          'echo "  Python, Swift, C, JavaScript, HTML, Bash"',
+        ]
+      },
+      '/home/pirate/scan.sh': {
+        type: 'file',
+        content: [
+          '#!/bin/bash',
+          '# scan.sh — Visitor fingerprint scanner',
+          '',
+          'echo "incoming connection detected..."',
+          'echo ""',
+          'echo "scanning visitor..."',
+          'echo ""',
+          'echo " ┌─────────────────────────────────────────────┐"',
+          'echo " │            VISITOR FINGERPRINT               │"',
+          'echo " └─────────────────────────────────────────────┘"',
+          'echo ""',
+          'echo "  IP:         $VISITOR_IP"',
+          'echo "  OS:         $VISITOR_OS"',
+          'echo "  Browser:    $VISITOR_BROWSER"',
+          'echo "  Screen:     $VISITOR_SCREEN"',
+          'echo "  Cores:      $VISITOR_CORES"',
+          'echo "  Language:   $VISITOR_LANG"',
+          'echo "  Timezone:   $VISITOR_TZ"',
+          'echo "  Device:     $VISITOR_DEVICE"',
+          'echo "  Connection: $VISITOR_CONN"',
+          'echo ""',
+          'echo "visitor authenticated. access granted."',
+        ]
+      },
+      '/home/pirate/exploit.py': {
+        type: 'file',
+        content: [
+          '#!/usr/bin/env python3',
+          '# exploit.py — Zero-day exploit framework',
+          '# Classification: TOP SECRET // PIRATE EYES ONLY',
+          '',
+          'import socket, struct, sys',
+          '',
+          'TARGET = sys.argv[1] if len(sys.argv) > 1 else "localhost"',
+          'PAYLOAD = b"\\x90" * 256  # NOP sled',
+          '',
+          'def exploit(target):',
+          '    print(f"[*] Connecting to {target}...")',
+          '    print("[*] Sending payload...")',
+          '    print("[!] exploit failed: target too smart")',
+          '    print("[!] Maybe try social engineering instead?")',
+          '',
+          'if __name__ == "__main__":',
+          '    exploit(TARGET)',
+        ]
+      },
+      '/home/pirate/.bashrc': {
+        type: 'file',
+        content: [
+          '# ~/.bashrc — Pirate\'s Den config',
+          'export PS1="[pirate@pirates-den \\W]\\$ "',
+          'export EDITOR=nano',
+          'export LANG=en_US.UTF-8',
+          'export PIRATE_MODE=always',
+          'alias ll="ls -lah"',
+          'alias grep="grep --color=auto"',
+          'alias hack="echo \'Nice try.\'"',
+          '',
+          '# Taking things apart since 1976',
+        ]
+      },
+      '/home/pirate/.ssh/': {
+        type: 'dir',
+        children: ['authorized_keys', 'known_hosts']
+      },
+      '/home/pirate/.ssh/authorized_keys': {
+        type: 'file',
+        content: ['ssh-rsa AAAAB3...pirate@pirates-den # Nice try ;)']
+      },
+      '/home/pirate/.ssh/known_hosts': {
+        type: 'file',
+        content: ['github.com,140.82.121.3 ssh-rsa AAAAB3...']
+      },
+      '/home/pirate/.pgp_keys/': {
+        type: 'dir',
+        children: ['pubkey.asc', 'privkey.asc']
+      },
+      '/home/pirate/.pgp_keys/pubkey.asc': {
+        type: 'file',
+        content: [
+          '-----BEGIN PGP PUBLIC KEY BLOCK-----',
+          'Version: GnuPG v2.3.7 (Pirate UNIX)',
+          '',
+          'mQINBGP1r4t3BEAC7h1s1sN0tAr34lK3y',
+          'Bu71tL00ksL1k30n3D035n71t',
+          'P1r4t3sD0n7N33dPGPTh3yN33dRum',
+          'AAAAB3NzaC1yc2EAAAADAQABAAACAQ==',
+          '=Y4rr',
+          '-----END PGP PUBLIC KEY BLOCK-----',
+        ]
+      },
+      '/home/pirate/.pgp_keys/privkey.asc': {
+        type: 'file',
+        content: [
+          '-----BEGIN PGP PRIVATE KEY BLOCK-----',
+          '',
+          'Nice try, mate. You really thought I\'d leave my',
+          'private key in a web terminal? Amateur hour.',
+          '',
+          '-----END PGP PRIVATE KEY BLOCK-----',
+        ]
+      },
+      '/home/pirate/message.txt.gpg': {
+        type: 'file',
+        content: [
+          '-----BEGIN PGP MESSAGE-----',
+          'jA0ECQMC7h1s1sEncRyPt3d',
+          'Th3M3ss4g31s: N3v3rSt0pHack1ng',
+          '=P1r4',
+          '-----END PGP MESSAGE-----',
+        ]
+      },
+      '/var/log/auth.log': {
+        type: 'file',
+        content: []
+      },
+      '/home/pirate/projects/': {
+        type: 'dir',
+        children: ['MacPersistenceChecker/', 'Aether/', 'Geotweet_GUI/', 'IPTV/', 'signal-pirate/', 'Medical-Research/']
+      },
+      '/home/pirate/projects/MacPersistenceChecker/': {
+        type: 'dir',
+        children: ['README.md', 'src/']
+      },
+      '/home/pirate/projects/MacPersistenceChecker/README.md': {
+        type: 'file',
+        content: [
+          '# MacPersistenceChecker ★206',
+          '',
+          'macOS persistence mechanism scanner with code signature',
+          'verification. Detects LaunchAgents, LaunchDaemons, login',
+          'items, and other persistence vectors.',
+          '',
+          'Language: Swift',
+          'https://github.com/pinperepette/MacPersistenceChecker',
+        ]
+      },
+      '/home/pirate/projects/Aether/': {
+        type: 'dir',
+        children: ['README.md', 'src/']
+      },
+      '/home/pirate/projects/Aether/README.md': {
+        type: 'file',
+        content: [
+          '# Aether ★21',
+          '',
+          'Native macOS disassembler with ARM64 and x86_64 support.',
+          'Built in Swift for performance and native feel.',
+          '',
+          'Language: Swift',
+          'https://github.com/pinperepette/Aether',
+        ]
+      },
+      '/home/pirate/projects/Geotweet_GUI/': {
+        type: 'dir',
+        children: ['README.md', 'src/']
+      },
+      '/home/pirate/projects/Geotweet_GUI/README.md': {
+        type: 'file',
+        content: [
+          '# Geotweet_GUI ★125',
+          '',
+          'Social engineering and OSINT tool for geolocation',
+          'analysis of social media posts.',
+          '',
+          'Language: Python',
+          'https://github.com/pinperepette/Geotweet_GUI',
+        ]
+      },
+      '/home/pirate/projects/IPTV/': {
+        type: 'dir',
+        children: ['README.md', 'src/']
+      },
+      '/home/pirate/projects/IPTV/README.md': {
+        type: 'file',
+        content: [
+          '# IPTV ★416',
+          '',
+          'IPTV server security testing tool.',
+          'Part of the Pirate-Crew organization.',
+          '',
+          'Language: Python',
+          'https://github.com/Pirate-Crew/IPTV',
+        ]
+      },
+      '/home/pirate/projects/signal-pirate/': {
+        type: 'dir',
+        children: ['README.md', 'index.html', 'analysis/', 'data/']
+      },
+      '/home/pirate/projects/signal-pirate/README.md': {
+        type: 'file',
+        content: [
+          '# Signal Pirate — The Laboratory',
+          '',
+          'I tear apart the algorithms that control your feed,',
+          'analyze the network traffic you\'re not supposed to see,',
+          'and tell it all with the right math and the wrong irony.',
+          '',
+          'https://pinperepette.github.io/signal.pirate/',
+        ]
+      },
+      '/home/pirate/projects/Medical-Research/': {
+        type: 'dir',
+        children: ['README.md', 'data/']
+      },
+      '/home/pirate/projects/Medical-Research/README.md': {
+        type: 'file',
+        content: [
+          '# Medical-Research ★13',
+          '',
+          'Research project applying ML to medical data.',
+          '',
+          'Language: Python',
+          'https://github.com/pinperepette/Medical-Research',
+        ]
+      },
+      '/home/pirate/blog/': {
+        type: 'dir',
+        children: ['signal-pirate.md']
+      },
+      '/home/pirate/blog/signal-pirate.md': {
+        type: 'file',
+        content: [
+          '# Signal Pirate — The Laboratory',
+          '',
+          'I tear apart the algorithms that control your feed,',
+          'analyze the network traffic you\'re not supposed to see,',
+          'and tell it all with the right math and the wrong irony.',
+          '',
+          'https://pinperepette.github.io/signal.pirate/',
+        ]
+      },
+    };
+
+    /* ============================================
+       HELPERS
+       ============================================ */
+    function getLastLogin() {
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const d = new Date(); d.setDate(d.getDate() - 1);
+      return days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate().toString().padStart(2,' ') + ' ' +
+             d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' +
+             d.getSeconds().toString().padStart(2,'0') + ' on tty0';
+    }
+
+    function addLine(text, cls) {
+      const el = document.createElement('div');
+      el.className = 'terminal-line' + (cls ? ' ' + cls : '');
+      el.textContent = text;
+      output.appendChild(el);
+    }
+
+    function addHTML(html, cls) {
+      const el = document.createElement('div');
+      el.className = 'terminal-line' + (cls ? ' ' + cls : '');
+      el.innerHTML = html;
+      output.appendChild(el);
+    }
+
+    function addAsciiLine(text) {
+      const el = document.createElement('div');
+      el.className = 'terminal-line terminal-ascii';
+      el.textContent = text;
+      output.appendChild(el);
+    }
+
+    function scrollToBottom() { window.scrollTo(0, document.body.scrollHeight); }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    function resolvePath(path) {
+      if (!path) return cwd;
+      if (path === '~') return '/home/pirate';
+      if (path.startsWith('~/')) return '/home/pirate/' + path.slice(2);
+      if (path.startsWith('/')) return path;
+      let base = cwd.endsWith('/') ? cwd : cwd + '/';
+      let parts = (base + path).split('/').filter(p => p !== '' && p !== '.');
+      let stack = [];
+      for (const p of parts) { if (p === '..') stack.pop(); else stack.push(p); }
+      return '/' + stack.join('/');
+    }
+
+    function getDisplayCwd() {
+      if (cwd === '/home/pirate') return '~';
+      if (cwd.startsWith('/home/pirate/')) return '~/' + cwd.slice('/home/pirate/'.length);
+      return cwd;
+    }
+
+    function updatePrompt() {
+      document.querySelector('.prompt').textContent = '[pirate@pirates-den ' + getDisplayCwd() + ']$ ';
+    }
+
+    function linkify(text) {
+      return escapeHtml(text).replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
+    }
+
+    /* ============================================
+       BOOT SEQUENCE
+       ============================================ */
+    const bootLines = [
+      { t: '', d: 200 },
+      { t: 'BIOS Pirate Systems v1.76', c: 'text-bright' },
+      { t: 'Copyright (C) 1976-2026 The Pirate\'s Den', c: 'text-dim' },
+      { t: '' },
+      { t: 'avail mem = 65011712' },
+      { t: '' },
+      { t: 'SCSI: no adapters found' },
+      { t: 'wd0 at isa0 port 0x1f0-0x1f7 irq 14: ST32140A, 2111MB, 4095 cyl, 16 head, 63 sec' },
+      { t: 'wd0a: <4.2BSD> 1024MB' },
+      { t: 'wd0b: <swap> 512MB' },
+      { t: 'wd0c: <unused> 575MB' },
+      { t: '' },
+      { t: 'ne0 at isa0 port 0x300 irq 10: address 00:DE:AD:BE:EF:76' },
+      { t: 'vga0 at isa0 port 0x3c0-0x3df: Cirrus Logic CL-GD5428' },
+      { t: '' },
+      { t: 'INIT: version 1 booting', c: 'text-bright' },
+      { t: '' },
+      { t: 'The system is coming up.  Please wait.', c: 'text-bright' },
+      { t: '', d: 300 },
+      { t: 'checking ufs filesystems' },
+      { t: '/dev/wd0a: 12418 files, 198632 used, 62904 free (1024 frags, 7735 blocks, 0.4% f' },
+      { t: '/dev/wd0c: clean' },
+      { t: '' },
+      { t: 'starting system logger:  syslogd' },
+      { t: 'starting kernel log daemon:  klogd' },
+      { t: 'starting intrusion detection:  snort' },
+      { t: 'starting threat hunter:  pirate-huntd' },
+      { t: 'starting cron daemon:  cron' },
+      { t: 'starting print spooler:  lpd' },
+      { t: '' },
+      { t: 'configuring network interfaces:' },
+      { t: '    lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 32768' },
+      { t: '         inet 127.0.0.1 netmask 0xff000000' },
+      { t: '    ne0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 1500' },
+      { t: '         inet 10.0.0.1 netmask 0xffffff00 broadcast 10.0.0.255' },
+      { t: '' },
+      { t: 'starting network daemons:  portmap mountd nfsd nfsiod' },
+      { t: 'starting sshd:  sshd' },
+      { t: '' },
+      { t: 'starting pirate-api:  [4822]' },
+      { t: '', d: 400 },
+      { t: 'Pirate UNIX System V Release 4.0 (pirates-den)', c: 'text-bright' },
+      { t: '' },
+      { t: 'login: pirate', c: 'text-bright' },
+      { t: 'Password: ********', c: 'text-bright' },
+      { t: '' },
+      { t: 'Last login: ' + getLastLogin(), c: 'text-bright' },
+      { t: '', d: 500 },
+    ];
+
+    const asciiArt = [
+      '██████╗ ██╗███╗   ██╗██████╗ ███████╗██████╗ ███████╗██████╗ ███████╗████████╗████████╗███████╗',
+      '██╔══██╗██║████╗  ██║██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝',
+      '██████╔╝██║██╔██╗ ██║██████╔╝█████╗  ██████╔╝█████╗  ██████╔╝█████╗     ██║      ██║   █████╗  ',
+      '██╔═══╝ ██║██║╚██╗██║██╔═══╝ ██╔══╝  ██╔══██╗██╔══╝  ██╔═══╝ ██╔══╝     ██║      ██║   ██╔══╝  ',
+      '██║     ██║██║ ╚████║██║     ███████╗██║  ██║███████╗██║     ███████╗   ██║      ██║   ███████╗',
+      '╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚══════╝   ╚═╝      ╚═╝   ╚══════╝',
+    ];
+
+    /* ---- Visitor detection ---- */
+    function detectOS() {
+      const ua = navigator.userAgent;
+      if (ua.includes('Windows NT 10')) return 'Windows 10/11';
+      if (ua.includes('Windows')) return 'Windows';
+      if (ua.includes('Mac OS X')) {
+        const v = ua.match(/Mac OS X (\d+[._]\d+)/);
+        return 'macOS' + (v ? ' ' + v[1].replace('_','.') : '');
+      }
+      if (ua.includes('Android')) return 'Android';
+      if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+      if (ua.includes('Linux')) return 'Linux';
+      return 'Unknown OS';
+    }
+
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      if (ua.includes('Firefox/')) return 'Firefox ' + (ua.match(/Firefox\/(\d+)/)||[])[1];
+      if (ua.includes('Edg/')) return 'Edge ' + (ua.match(/Edg\/(\d+)/)||[])[1];
+      if (ua.includes('Chrome/')) return 'Chrome ' + (ua.match(/Chrome\/(\d+)/)||[])[1];
+      if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari ' + (ua.match(/Version\/(\d+)/)||[])[1];
+      return 'Unknown Browser';
+    }
+
+    async function getVisitorIP() {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        return data.ip;
+      } catch { return '?.?.?.?'; }
+    }
+
+    async function runBootSequence() {
+      for (const l of bootLines) { addLine(l.t, l.c); await sleep(l.d || 35); }
+
+      addLine('');
+      for (const a of asciiArt) addAsciiLine(a);
+      await sleep(150);
+      addLine('');
+      addLine(' Pirate UNIX System V Release 4.0 (tty0)', 'text-dim');
+      addLine(' Last login: ' + getLastLogin(), 'text-dim');
+      addLine('');
+      addLine(' Taking things apart since 1976.', 'text-bright');
+      addLine(' Security engineer by day, pirate by night.', 'text-bright');
+      addLine(' The stack changes; the logic remains.', 'text-bright');
+      addLine('');
+      addLine(" Type 'help' for available commands.", 'text-dim');
+      addLine('');
+      inputLine.style.display = 'flex';
+      cmdInput.focus();
+      scrollToBottom();
+    }
+
+    /* ============================================
+       COMMAND ROUTER
+       ============================================ */
+    function runCommand(raw) {
+      // Secondary server-side length guard (in case maxlength attribute is bypassed)
+      if (raw.length > 500) { addLine('sh: command line too long (max 500 chars)'); scrollToBottom(); return; }
+      const trimmed = raw.trim();
+      const parts = trimmed.split(/\s+/);
+      const cmd = parts[0];
+      const args = parts.slice(1);
+
+      addHTML('<span class="prompt-echo">[pirate@pirates-den ' + escapeHtml(getDisplayCwd()) + ']$ </span>' + escapeHtml(raw));
+      if (!trimmed) { scrollToBottom(); return; }
+
+      const handlers = {
+        help: cmdHelp, ls: cmdLs, cd: cmdCd, pwd: cmdPwd, cat: cmdCat, bat: cmdBat,
+        head: cmdHead, tail: cmdTail, stat: cmdStat, find: cmdFind,
+        grep: cmdGrep, wc: cmdWc, echo: cmdEcho, which: cmdWhich,
+        file: cmdFile, df: cmdDf, du: cmdDu, ps: cmdPs, top: cmdTop,
+        ping: cmdPing, netstat: cmdNetstat, ifconfig: cmdIfconfig,
+        nano: cmdNano, sh: cmdSh, mail: cmdMail, ssh: cmdSsh,
+        man: cmdMan, uname: cmdUname, env: cmdEnv, whoami: cmdWhoami,
+        id: cmdId, hostname: cmdHostname, date: cmdDate, cal: cmdCal,
+        clear: cmdClear, history: cmdHistory, uptime: cmdUptime,
+        free: cmdFree, lscpu: cmdLscpu, exit: cmdExit,
+        nmap: cmdNmap, hexdump: cmdHexdump, crontab: cmdCrontab,
+        traceroute: cmdTraceroute, john: cmdJohn, gpg: cmdGpg,
+      };
+
+      if (trimmed.match(/^(sudo\s+)?rm\s+.*-rf|^(sudo\s+)?rm\s+-rf/)) { cmdRmRf(); }
+      else if (handlers[cmd]) { handlers[cmd](args); }
+      else if (cmd === 'bash') { cmdSh(args); }
+      else if (cmd.startsWith('./')) { cmdSh([cmd.slice(2), ...args]); }
+      else if (['mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch'].includes(cmd)) { addLine(cmd + ': permission denied'); }
+      else if (cmd === 'sudo') { addLine('pirate is not in the sudoers file. This incident will be reported.'); }
+      else if (cmd === 'su') { addLine('su: Authentication failure'); }
+      else if (cmd === 'hack') { addLine('Nice try.'); }
+      else if (['wget','curl'].includes(cmd)) { addLine(cmd + ': network requests disabled in web terminal'); }
+      else if (['vi','vim','emacs'].includes(cmd)) { addLine(cmd + ': not available, use nano'); }
+      else if (['python','python3'].includes(cmd)) {
+        if (args.length && args[0] === 'exploit.py') { cmdExploitPy(); }
+        else { addLine('Python 3.11.7 (pirates-den)'); addLine('>>> Not a real interpreter. But nice try, mate.'); }
+      }
+      else if (cmd === 'node') { addLine('node: not installed (this is a pirate ship, not a hipster cafe)'); }
+      else if (['apt','yum','pacman','brew'].includes(cmd)) { addLine(cmd + ': permission denied'); }
+      else if (['reboot','shutdown','poweroff','halt'].includes(cmd)) { addLine(cmd + ': permission denied (only the captain can do that)'); }
+      else if (cmd === 'sort') { addLine('sort: missing operand'); }
+      else if (trimmed.includes(':(){ :|:& };:') || trimmed.includes(':(){ :|:&};:')) { addLine(''); addLine('Fork bomb detected. You know your stuff.', 'text-accent'); addLine('But this ship has cgroups. Nice try, mate.', 'text-dim'); addLine(''); }
+      else { addLine(' sh: command not found: ' + cmd); }
+      scrollToBottom();
+    }
+
+    /* ============================================
+       COMMAND IMPLEMENTATIONS
+       ============================================ */
+    function cmdHelp() {
+      addLine('');
+      addLine(' Available commands (Pirate UNIX SVR4):', 'text-bright');
+
+      const pad = 24;
+      const sections = [
+        ['FILES & NAVIGATION', [
+          ['ls [-lah] [dir]',      'List directory contents'],
+          ['cd <dir>',             'Change directory'],
+          ['pwd',                  'Print working directory'],
+          ['cat <file>',           'Display file contents'],
+          ['bat <file>',           'Syntax-highlighted view'],
+          ['head/tail <file>',     'First/last lines'],
+          ['stat <file>',          'File status'],
+          ['find [path]',          'Search files'],
+          ['grep <pat> <file>',    'Search in files'],
+          ['wc <file>',            'Word/line count'],
+          ['hexdump <file>',       'Hex dump of file'],
+          ['nano <file>',          'Text editor'],
+          ['file <path>',          'Identify file type'],
+        ]],
+        ['SCRIPTS & EXECUTION', [
+          ['sh/bash <script>',     'Execute shell script'],
+          ['./<script>',           'Run script directly'],
+          ['python <script>',      'Run Python script'],
+        ]],
+        ['SECURITY & HACKING', [
+          ['nmap <host>',          'Port scan'],
+          ['traceroute <host>',    'Trace packet route'],
+          ['john <file>',          'Password cracker'],
+          ['gpg --decrypt <file>', 'Decrypt PGP message'],
+          ['gpg --list-keys',      'List PGP keys'],
+          ['tail -f',              'Live auth.log stream'],
+        ]],
+        ['SYSTEM', [
+          ['ps / top',             'Processes / monitor'],
+          ['df / du',              'Disk / directory usage'],
+          ['free',                 'Memory usage'],
+          ['uname [-a]',           'System info'],
+          ['env',                  'Environment variables'],
+          ['crontab -l',           'Scheduled jobs'],
+          ['lscpu',                'CPU info'],
+          ['uptime',               'System uptime'],
+        ]],
+        ['NETWORK', [
+          ['ping <host>',          'Ping host'],
+          ['netstat',              'Network connections'],
+          ['ifconfig',             'Network interfaces'],
+          ['ssh github',           'Open GitHub profile'],
+          ['mail',                 'Contact info'],
+        ]],
+        ['OTHER', [
+          ['whoami',               'User info'],
+          ['id',                   'User identity'],
+          ['hostname',             'System hostname'],
+          ['date / cal',           'Date / calendar'],
+          ['man <cmd>',            'Manual page'],
+          ['which <cmd>',          'Locate command'],
+          ['echo <text>',          'Print text'],
+          ['history',              'Command history'],
+          ['clear',                'Clear terminal'],
+          ['help',                 'This help'],
+        ]],
+      ];
+
+      for (const [title, cmds] of sections) {
+        addLine('');
+        addHTML(' <span class="text-bright">── ' + title + ' ──</span>');
+        for (const [c, d] of cmds) {
+          addHTML('  <span class="text-accent">' + escapeHtml(c.padEnd(pad)) + '</span>' + escapeHtml(d));
+        }
+      }
+      addLine('');
+      addLine(" Tip: try 'nmap localhost', './scan.sh', 'gpg --decrypt message.txt.gpg'", 'text-dim');
+      addLine("      'tail -f', 'john shadow.txt', 'traceroute github.com', 'rm -rf /'", 'text-dim');
+      addLine('');
+    }
+
+    function cmdLs(args) {
+      const long = args.some(a => ['-l','-la','-lah','-al','-lha'].includes(a));
+      const hidden = args.some(a => ['-a','-la','-lah','-al','-lha'].includes(a));
+      let target = cwd;
+      for (const a of args) { if (!a.startsWith('-')) { target = resolvePath(a); break; } }
+      let key = target;
+      if (!key.endsWith('/') && filesystem[key + '/']) key += '/';
+      const dir = filesystem[key] || filesystem[target];
+      if (!dir || dir.type !== 'dir') { addLine('ls: cannot access \'' + target + '\': No such file or directory'); return; }
+      let items = [...dir.children];
+      if (hidden) items = ['.', '..', ...items];
+      if (long) {
+        addLine('total ' + items.length * 4);
+        for (const item of items) {
+          const isDir = item.endsWith('/') || item === '.' || item === '..';
+          const p = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+          const s = isDir ? '4096' : (Math.floor(Math.random()*9000)+1000).toString();
+          addHTML(p + '  1 pirate pirate ' + s.padStart(5) + ' Mar 20 19:76 ' +
+            (isDir ? '<span class="text-accent">' + escapeHtml(item) + '</span>' : escapeHtml(item)));
+        }
+      } else {
+        let line = '';
+        for (const item of items) {
+          const isDir = item.endsWith('/') || item === '.' || item === '..';
+          line += isDir ? '<span class="text-accent">' + escapeHtml(item) + '</span>  ' : escapeHtml(item) + '  ';
+        }
+        addHTML(line);
+      }
+    }
+
+    function cmdCd(args) {
+      if (!args.length || args[0] === '~') { cwd = '/home/pirate'; updatePrompt(); return; }
+      let target = resolvePath(args[0]);
+      let key = target;
+      if (!key.endsWith('/') && filesystem[key + '/']) key += '/';
+      const dir = filesystem[key] || filesystem[target];
+      if (dir && dir.type === 'dir') { cwd = target.replace(/\/$/, '') || '/'; updatePrompt(); }
+      else addLine('cd: ' + args[0] + ': No such file or directory');
+    }
+
+    function cmdPwd() { addLine(cwd); }
+
+    function cmdCat(args) {
+      if (!args.length) { addLine('cat: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f) { addLine('cat: ' + args[0] + ': No such file or directory'); return; }
+      if (f.type === 'dir') { addLine('cat: ' + args[0] + ': Is a directory'); return; }
+      for (const line of f.content) { addHTML(linkify(line)); }
+    }
+
+    function cmdBat(args) {
+      if (!args.length) { addLine('bat: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f) { addLine('bat: ' + args[0] + ': No such file or directory'); return; }
+      if (f.type === 'dir') { addLine('bat: ' + args[0] + ': Is a directory'); return; }
+
+      const filename = args[0];
+      const lang = detectLang(filename);
+
+      // Build bat container
+      const container = document.createElement('div');
+      container.className = 'bat-container';
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'bat-header';
+      header.innerHTML = '<span class="bat-header-file">File: ' + escapeHtml(filename) + '</span><span class="bat-header-lang">' + escapeHtml(lang) + '</span>';
+      container.appendChild(header);
+
+      // Lines
+      for (let i = 0; i < f.content.length; i++) {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'bat-line';
+
+        const gutter = document.createElement('span');
+        gutter.className = 'bat-gutter';
+        gutter.textContent = (i + 1).toString();
+
+        const content = document.createElement('span');
+        content.className = 'bat-content';
+        content.innerHTML = highlightSyntax(f.content[i], lang);
+
+        lineEl.appendChild(gutter);
+        lineEl.appendChild(content);
+        container.appendChild(lineEl);
+      }
+
+      output.appendChild(container);
+    }
+
+    function detectLang(filename) {
+      if (filename.endsWith('.sh')) return 'Bash';
+      if (filename.endsWith('.py')) return 'Python';
+      if (filename.endsWith('.js')) return 'JavaScript';
+      if (filename.endsWith('.md')) return 'Markdown';
+      if (filename.endsWith('.html')) return 'HTML';
+      if (filename.endsWith('.txt')) return 'Plain Text';
+      if (filename.endsWith('.json')) return 'JSON';
+      if (filename === '.bashrc') return 'Bash';
+      return 'Plain Text';
+    }
+
+    function highlightSyntax(line, lang) {
+      let h = escapeHtml(line);
+
+      if (lang === 'Bash') {
+        // Comments
+        h = h.replace(/^(\s*)(#.*)$/, '$1<span class="syn-comment">$2</span>');
+        // Strings
+        h = h.replace(/(&#39;[^&#]*(?:&#39;)?|&quot;[^&]*(?:&quot;)?)/g, '<span class="syn-string">$1</span>');
+        // Keywords
+        h = h.replace(/\b(export|alias|echo|if|then|else|fi|for|do|done|while|case|esac|function|return|source)\b/g, '<span class="syn-keyword">$1</span>');
+        // Variables
+        h = h.replace(/(\$\w+|\$\{[^}]+\})/g, '<span class="syn-var">$1</span>');
+        // Flags
+        h = h.replace(/(\s)(--?\w[\w-]*)/g, '$1<span class="syn-flag">$2</span>');
+      } else if (lang === 'Python') {
+        h = h.replace(/^(\s*)(#.*)$/, '$1<span class="syn-comment">$2</span>');
+        h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;)/g, '<span class="syn-string">$1</span>');
+        h = h.replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|with|as|yield|lambda|pass|raise|True|False|None|self|print)\b/g, '<span class="syn-keyword">$1</span>');
+        h = h.replace(/\b(\d+\.?\d*)\b/g, '<span class="syn-number">$1</span>');
+      } else if (lang === 'Markdown') {
+        // Headings
+        if (h.match(/^#{1,6}\s/)) h = '<span class="syn-heading">' + h + '</span>';
+        // Bold
+        h = h.replace(/\*\*([^*]+)\*\*/g, '<span class="syn-bold">**$1**</span>');
+        // Links
+        h = h.replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link syn-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
+        // Stars (★)
+        h = h.replace(/(★\d+)/g, '<span class="syn-number">$1</span>');
+      } else if (lang === 'Plain Text') {
+        // Key: Value pairs
+        h = h.replace(/^(\s*)(\w[\w\s]*?)(:\s+)/, '$1<span class="syn-var">$2</span>$3');
+        // URLs
+        h = h.replace(/(https?:\/\/[^\s<>"]+)/g, function(match) { var safe = match.replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; }); return '<a href="' + safe + '" class="terminal-link syn-link" target="_blank" rel="noopener noreferrer">' + safe + '</a>'; });
+        // Quoted text
+        h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;)/g, '<span class="syn-string">$1</span>');
+      }
+
+      return h;
+    }
+
+    function cmdHead(args) {
+      if (!args.length) { addLine('head: missing operand'); return; }
+      const path = resolvePath(args[args.length-1]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('head: cannot open \'' + args[args.length-1] + '\''); return; }
+      for (let i = 0; i < Math.min(5, f.content.length); i++) addHTML(linkify(f.content[i]));
+    }
+
+    function cmdTail(args) {
+      if (!args.length) { addLine('tail: missing operand'); return; }
+      if (args.includes('-f')) { cmdTailF(); return; }
+      const path = resolvePath(args[args.length-1]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('tail: cannot open \'' + args[args.length-1] + '\''); return; }
+      const start = Math.max(0, f.content.length - 5);
+      for (let i = start; i < f.content.length; i++) addHTML(linkify(f.content[i]));
+    }
+
+    function cmdStat(args) {
+      if (!args.length) { addLine('stat: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path] || filesystem[path + '/'];
+      if (!f) { addLine('stat: cannot stat \'' + args[0] + '\': No such file or directory'); return; }
+      addLine('  File: ' + args[0]);
+      addLine('  Size: ' + (f.type === 'dir' ? '4096' : '1337') + '\tBlocks: 8\tIO Block: 4096\t' + f.type);
+      addLine('Access: ' + (f.type === 'dir' ? '(0755/drwxr-xr-x)' : '(0644/-rw-r--r--)') + '  Uid: (1000/pirate)  Gid: (1000/pirate)');
+      addLine('Modify: 2026-03-20 19:76:00.000000000 +0100');
+    }
+
+    function cmdFind() {
+      addLine('.');
+      for (const key in filesystem) {
+        if (key.startsWith('/home/pirate')) addLine('.' + key.slice('/home/pirate'.length));
+      }
+    }
+
+    function cmdGrep(args) {
+      if (args.length < 2) { addLine('Usage: grep <pattern> <file>'); return; }
+      const pat = args[0].toLowerCase();
+      const path = resolvePath(args[1]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('grep: ' + args[1] + ': No such file'); return; }
+      for (const line of f.content) {
+        if (line.toLowerCase().includes(pat)) {
+          addHTML(escapeHtml(line).replace(new RegExp('(' + escapeRegex(escapeHtml(pat)) + ')', 'gi'), '<span class="text-accent">$1</span>'));
+        }
+      }
+    }
+
+    function cmdWc(args) {
+      if (!args.length) { addLine('wc: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('wc: ' + args[0] + ': No such file'); return; }
+      const lines = f.content.length;
+      const words = f.content.join(' ').split(/\s+/).filter(w=>w).length;
+      const chars = f.content.join('\n').length;
+      addLine(' ' + lines + '  ' + words + ' ' + chars + ' ' + args[0]);
+    }
+
+    function cmdEcho(args) { addLine(args.join(' ')); }
+
+    function cmdWhich(args) {
+      if (!args.length) { addLine('which: missing argument'); return; }
+      const bins = ['ls','cd','pwd','cat','head','tail','grep','find','echo','man','ps','top','ping','ssh','nano','sh','bash','date','cal','clear','whoami','uname','env','df','du','ifconfig','netstat','free','uptime','wc','sort','stat','file','which','history','id','hostname','mail','nmap','hexdump','crontab','traceroute','john','gpg'];
+      addLine(bins.includes(args[0]) ? '/usr/bin/' + args[0] : args[0] + ' not found');
+    }
+
+    function cmdFile(args) {
+      if (!args.length) { addLine('file: missing argument'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path] || filesystem[path + '/'];
+      if (!f) { addLine(args[0] + ': cannot open (No such file or directory)'); return; }
+      if (f.type === 'dir') addLine(args[0] + ': directory');
+      else if (args[0].endsWith('.sh')) addLine(args[0] + ': Bourne-Again shell script, ASCII text executable');
+      else if (args[0].endsWith('.py')) addLine(args[0] + ': Python script, ASCII text executable');
+      else if (args[0].endsWith('.md')) addLine(args[0] + ': UTF-8 Unicode text');
+      else addLine(args[0] + ': ASCII text');
+    }
+
+    function cmdDf() {
+      addLine('Filesystem     1K-blocks    Used Available Use% Mounted on');
+      addLine('/dev/wd0a        1048576  198632    849944  19% /');
+      addLine('/dev/wd0c         588800       0    588800   0% /tmp');
+      addLine('tmpfs             512000    1976    510024   1% /dev/shm');
+    }
+
+    function cmdDu() {
+      addLine('4.0K\t./about.txt');
+      addLine('8.0K\t./skills.sh');
+      addLine('4.0K\t./scan.sh');
+      addLine('4.0K\t./exploit.py');
+      addLine('4.0K\t./message.txt.gpg');
+      addLine('4.0K\t./.pgp_keys');
+      addLine('4.0K\t./.bashrc');
+      addLine('4.0K\t./.ssh');
+      addLine('48K\t./projects');
+      addLine('8.0K\t./blog');
+      addLine('249\t./projects (repos on GitHub)');
+      addLine('80K\t.');
+    }
+
+    function cmdPs() {
+      addLine('  PID TTY          TIME CMD');
+      addLine(' 1976 tty0     00:00:00 bash');
+      addLine(' 4822 tty0     00:00:01 pirate-api');
+      addLine(' 4823 tty0     00:00:00 snort');
+      addLine(' 4824 tty0     00:00:00 pirate-huntd');
+      addLine(' 4825 tty0     00:00:03 threat-scanner');
+      addLine(' 4826 tty0     00:00:00 anomaly-detector');
+      addLine(' 4827 tty0     00:00:02 ml-pipeline');
+      addLine(' 4828 tty0     00:00:00 sshd');
+      addLine(' 4829 tty0     00:00:00 cron');
+      addLine(' 4830 tty0     00:00:00 ps');
+    }
+
+    function cmdTop() {
+      const d = new Date();
+      const time = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' + d.getSeconds().toString().padStart(2,'0');
+      addLine('top - ' + time + ' up 17666 days, load average: 0.42, 0.37, 0.19');
+      addLine('Tasks:  10 total,   2 running,   8 sleeping');
+      addLine('Cpu(s):  3.7%us,  1.2%sy,  0.0%ni, 94.8%id,  0.3%wa');
+      addLine('Mem:    65011712k total, 12345678k used, 52665034k free');
+      addLine('');
+      addLine('  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+ COMMAND');
+      addLine(' 4822 pirate    20   0  512m  64m  12m R  2.3  0.1   0:01.37 pirate-api');
+      addLine(' 4825 pirate    20   0  256m  48m   8m R  1.7  0.1   0:03.42 threat-scanner');
+      addLine(' 4826 pirate    20   0  1.2g 256m  32m S  1.3  0.4   0:00.89 anomaly-detector');
+      addLine(' 4827 pirate    20   0  2.1g 512m  64m S  0.7  0.8   0:02.15 ml-pipeline');
+      addLine(' 4823 pirate    20   0  128m  16m   4m S  0.3  0.0   0:00.42 snort');
+      addLine(' 4824 pirate    20   0   64m   8m   2m S  0.1  0.0   0:00.19 pirate-huntd');
+      addLine(' 1976 pirate    20   0   24m   8m   4m S  0.0  0.0   0:00.01 bash');
+    }
+
+    function cmdPing(args) {
+      if (!args.length) { addLine('ping: missing host operand'); return; }
+      const host = args[0];
+      if (host === 'github.com') {
+        addLine('PING github.com (140.82.121.3): 56 data bytes');
+        for (let i = 0; i < 4; i++) addLine('64 bytes from 140.82.121.3: icmp_seq=' + i + ' ttl=56 time=' + (Math.random()*20+5).toFixed(1) + ' ms');
+        addLine('--- github.com ping statistics ---');
+        addLine('4 packets transmitted, 4 received, 0% packet loss');
+        addLine('');
+        addHTML('pinperepette has <span class="text-accent">249 repos</span>, <span class="text-accent">477 followers</span> on GitHub');
+      } else {
+        addLine('PING ' + host + ' (93.184.216.34): 56 data bytes');
+        for (let i = 0; i < 4; i++) addLine('64 bytes from 93.184.216.34: icmp_seq=' + i + ' ttl=56 time=' + (Math.random()*30+10).toFixed(1) + ' ms');
+        addLine('--- ' + host + ' ping statistics ---');
+        addLine('4 packets transmitted, 4 received, 0% packet loss');
+      }
+    }
+
+    function cmdNetstat() {
+      addLine('Active Internet connections');
+      addLine('Proto Recv-Q Send-Q Local Address          Foreign Address        State');
+      addLine('tcp        0      0 0.0.0.0:22             0.0.0.0:*              LISTEN');
+      addLine('tcp        0      0 0.0.0.0:4822           0.0.0.0:*              LISTEN');
+      addLine('tcp        0      0 10.0.0.1:4822          10.0.0.42:51234        ESTABLISHED');
+      addLine('tcp        0      0 10.0.0.1:443           140.82.121.3:22        ESTABLISHED  # github');
+      addLine('udp        0      0 0.0.0.0:514            0.0.0.0:*                           # syslog');
+    }
+
+    function cmdIfconfig() {
+      addLine('lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 32768');
+      addLine('        inet 127.0.0.1  netmask 0xff000000');
+      addLine('');
+      addLine('ne0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 1500');
+      addLine('        inet 10.0.0.1  netmask 0xffffff00  broadcast 10.0.0.255');
+      addLine('        ether 00:DE:AD:BE:EF:76');
+      addLine('        RX packets:197619  TX packets:197600');
+      addLine('        RX bytes:477000000 (477 MB)  TX bytes:249000000 (249 MB)');
+    }
+
+    function cmdNano(args) {
+      if (!args.length) { addLine('nano: missing filename'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('nano: ' + args[0] + ': No such file'); return; }
+      addLine('');
+      addLine('  GNU nano 7.2             ' + args[0], 'text-bright');
+      addLine('');
+      for (const line of f.content) addHTML(linkify(line));
+      addLine('');
+      addLine('  [ Read ' + f.content.length + ' lines ]', 'text-dim');
+      addLine('  ^X Exit    ^O Write Out    ^W Where Is    ^K Cut', 'text-dim');
+      addLine('');
+    }
+
+    async function cmdScanSh() {
+      const visitorIP = await getVisitorIP();
+      const os = detectOS();
+      const browser = detectBrowser();
+      const lang = navigator.language || 'en-US';
+      const scr = window.screen.width + 'x' + window.screen.height;
+      const cores = navigator.hardwareConcurrency || '?';
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown';
+      const mobile = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent);
+      const connection = navigator.connection ? navigator.connection.effectiveType : 'unknown';
+
+      addLine('incoming connection detected...', 'text-bright');
+      await sleep(200);
+      addLine('');
+      addLine('scanning visitor...', 'text-dim');
+      await sleep(300);
+      addLine('');
+      addLine(' ┌─────────────────────────────────────────────┐', 'text-accent');
+      addLine(' │            VISITOR FINGERPRINT               │', 'text-accent');
+      addLine(' └─────────────────────────────────────────────┘', 'text-accent');
+      addLine('');
+      addHTML('  <span class="text-accent">IP:</span>         ' + escapeHtml(visitorIP));
+      await sleep(60);
+      addHTML('  <span class="text-accent">OS:</span>         ' + escapeHtml(os));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Browser:</span>    ' + escapeHtml(browser));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Screen:</span>     ' + escapeHtml(scr));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Cores:</span>      ' + cores);
+      await sleep(60);
+      addHTML('  <span class="text-accent">Language:</span>   ' + escapeHtml(lang));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Timezone:</span>   ' + escapeHtml(tz));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Device:</span>     ' + (mobile ? 'Mobile' : 'Desktop'));
+      await sleep(60);
+      addHTML('  <span class="text-accent">Connection:</span> ' + escapeHtml(connection));
+      addLine('');
+      await sleep(300);
+      addLine('visitor authenticated. access granted.', 'text-bright');
+      addLine('');
+      scrollToBottom();
+    }
+
+    function cmdSh(args) {
+      if (!args.length) { addLine('sh: missing script argument'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('sh: ' + args[0] + ': No such file'); return; }
+      if (path === '/home/pirate/scan.sh') { cmdScanSh(); return; }
+      if (path === '/home/pirate/exploit.py') { cmdExploitPy(); return; }
+      for (const line of f.content) {
+        const m = line.match(/echo\s+"(.*)"/);
+        if (m) addLine(m[1]);
+      }
+    }
+
+    function cmdMail() {
+      addLine('');
+      addLine(' No new mail.', 'text-dim');
+      addLine(' To contact the pirate:', 'text-dim');
+      addLine('');
+      addHTML('  <span class="text-accent">GitHub</span>   <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
+      addHTML('  <span class="text-accent">X</span>        <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://x.com/Pinperepette</a>');
+      addHTML('  <span class="text-accent">Blog</span>     <a href="https://pinperepette.github.io/signal.pirate/" class="terminal-link" target="_blank" rel="noopener noreferrer">https://pinperepette.github.io/signal.pirate/</a>');
+      addLine('');
+    }
+
+    function cmdSsh(args) {
+      if (!args.length) { addLine('ssh: missing host'); return; }
+      if (args[0] === 'github' || args[0] === 'github.com') {
+        addHTML('Connecting to GitHub... <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
+        window.open('https://github.com/pinperepette', '_blank', 'noopener,noreferrer');
+      } else { addLine('ssh: connect to host ' + args[0] + ' port 22: Connection refused'); }
+    }
+
+    function cmdMan(args) {
+      if (!args.length) { addLine('What manual page do you want?'); addLine("Try 'man pirate' for the good stuff."); return; }
+      const topic = args[0].toLowerCase();
+      if (['pirate','pinperepette','andrea','amani'].includes(topic)) {
+        addLine('');
+        addHTML('<span class="text-bright">PIRATE(1)              User Commands              PIRATE(1)</span>');
+        addLine('');
+        addHTML('<span class="text-bright">NAME</span>');
+        addLine('       pirate - security engineer & open source contributor');
+        addLine('');
+        addHTML('<span class="text-bright">SYNOPSIS</span>');
+        addLine('       pirate [--hire] [--collaborate] [--consult] [--hack]');
+        addLine('');
+        addHTML('<span class="text-bright">DESCRIPTION</span>');
+        addLine('       Andrea Amani aka Pinperepette is a security engineer');
+        addLine('       born in 1976. 477 GitHub followers. 249 repositories.');
+        addLine('       Arctic Code Vault Contributor. Pull Shark. Starstruck.');
+        addLine('       Taking things apart since day one.');
+        addLine('');
+        addHTML('<span class="text-bright">OPTIONS</span>');
+        addHTML('       <span class="text-accent">--hire</span>          Available for security consulting');
+        addHTML('       <span class="text-accent">--collaborate</span>   Open to OSS project collaboration');
+        addHTML('       <span class="text-accent">--consult</span>       Security architecture & code review');
+        addHTML('       <span class="text-accent">--hack</span>         Accepting bug bounty partnerships');
+        addLine('');
+        addHTML('<span class="text-bright">EXPERTISE</span>');
+        addHTML('       Security:  Network defense, threat hunting, SIEM/IDS, 0-day');
+        addHTML('       ML:        Deep learning, anomaly detection, adversarial ML');
+        addHTML('       Code:      Python, Swift, C, Bash, distributed systems');
+        addHTML('       Tooling:   Malware analysis, persistence mechanisms, OSINT');
+        addLine('');
+        addHTML('<span class="text-bright">PROJECTS</span>');
+        addHTML('       MacPersistenceChecker ★206  macOS persistence scanner (Swift)');
+        addHTML('       IPTV                 ★416  IPTV security testing (Python)');
+        addHTML('       Geotweet_GUI         ★125  OSINT geolocation tool (Python)');
+        addHTML('       Aether               ★21   macOS disassembler ARM64/x86_64 (Swift)');
+        addHTML('       Medical-Research     ★13   ML applied to medical data (Python)');
+        addLine('');
+        addHTML('<span class="text-bright">SEE ALSO</span>');
+        addLine('       cat about.txt, sh skills.sh, ./scan.sh, ls projects/, mail, ssh github');
+        addLine('');
+        addHTML('<span class="text-bright">AUTHOR</span>');
+        addLine('       Andrea Amani <pinperepette>');
+        addHTML('       <a href="https://github.com/pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://github.com/pinperepette</a>');
+        addLine('');
+        addHTML('<span class="text-dim">pinperepette.github.io        March 2026              PIRATE(1)</span>');
+        addLine('');
+      } else if (['ls','cd','pwd','cat','grep','find','ps','man','echo','date'].includes(topic)) {
+        addLine('');
+        addHTML('<span class="text-bright">' + topic.toUpperCase() + '(1)              User Commands              ' + topic.toUpperCase() + '(1)</span>');
+        addLine('');
+        addHTML('<span class="text-bright">NAME</span>');
+        addLine('       ' + topic + ' - standard Unix command');
+        addLine('');
+        addLine("       This is a simulated terminal. Try 'man pirate' for the good stuff.");
+        addLine('');
+      } else {
+        addLine('No manual entry for ' + topic);
+        addLine("Try 'man pirate' instead.");
+      }
+    }
+
+    function cmdUname(args) {
+      if (args.includes('-a')) addLine('Pirate UNIX System V Release 4.0 pirates-den 4.2BSD #1976 SMP x86_64');
+      else addLine('Pirate UNIX System V Release 4.0');
+    }
+
+    function cmdEnv() {
+      addLine('USER=pirate');
+      addLine('HOME=/home/pirate');
+      addLine('SHELL=/bin/bash');
+      addLine('TERM=xterm-256color');
+      addLine('HOSTNAME=pirates-den');
+      addLine('LANG=en_US.UTF-8');
+      addLine('EDITOR=nano');
+      addLine('REAL_NAME=Andrea Amani');
+      addLine('ALIAS=Pinperepette');
+      addLine('ROLE=Security Engineer');
+      addLine('BORN=1976');
+      addLine('GITHUB_REPOS=249');
+      addLine('GITHUB_FOLLOWERS=477');
+      addLine('GITHUB_STARS=781');
+      addLine('ACHIEVEMENTS=Pull Shark,Arctic Code Vault,Starstruck');
+      addLine('SKILLS=security,ml,python,swift,c,bash');
+      addLine('PIRATE_MODE=always');
+      addLine('MOTTO=Taking things apart since 1976');
+      addLine('P_BUG_FIX=P(Bug|Fix)!=P(Fix|Bug)');
+      addLine('DEBUGGING=infinity');
+    }
+
+    function cmdWhoami() {
+      addLine('');
+      addHTML(' ☠ <span class="text-bright">The Pirate</span> ☠  <span class="text-dim">@Pinperepette</span>');
+      addLine('');
+      addLine(" ☠ { 'name': 'Andrea Amani' }, #Security #engineer,");
+      addLine(' P(Bug | Fix) ≠ P(Fix | Bug).');
+      addLine(' Debugging → ∞ (converge? maybe). Classe \'76, Σ(errors²) ≠ 0 ;');
+      addLine('');
+      addHTML(' <span class="text-dim">📍 @::1</span>    <span class="text-dim">🔗 pinperepette.github.io</span>');
+      addHTML(' <span class="text-dim">🎂 Born: January 30, 1976</span>    <span class="text-dim">📅 Joined: August 2010</span>');
+      addLine('');
+      addHTML(' <span class="text-accent">800</span> following    <span class="text-accent">16,912</span> followers');
+      addLine('');
+      addHTML(' <a href="https://x.com/Pinperepette" class="terminal-link" target="_blank" rel="noopener noreferrer">https://x.com/Pinperepette</a>');
+      addLine('');
+    }
+
+    function cmdId() {
+      addLine('uid=1976(pirate) gid=1976(pirate) groups=1976(pirate),security,ml,oss,arctic-vault');
+    }
+
+    function cmdHostname() { addLine('pirates-den'); }
+
+    function cmdDate() {
+      const d = new Date();
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      addLine(days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate().toString().padStart(2,' ') + ' ' +
+              d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' +
+              d.getSeconds().toString().padStart(2,'0') + ' CET ' + d.getFullYear());
+      addLine('Pirate active since: Jan  1 00:00:00 CET 1976 (' + (d.getFullYear() - 1976) + ' years of taking things apart)');
+    }
+
+    function cmdCal() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const header = months[month] + ' ' + year;
+      const pad = Math.floor((20 - header.length) / 2);
+      addLine(' '.repeat(Math.max(0, pad)) + header);
+      addLine('Su Mo Tu We Th Fr Sa');
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let line = '   '.repeat(firstDay);
+      for (let day = 1; day <= daysInMonth; day++) {
+        line += day.toString().padStart(2, ' ') + ' ';
+        if ((firstDay + day) % 7 === 0) { addLine(line.trimEnd()); line = ''; }
+      }
+      if (line) addLine(line.trimEnd());
+    }
+
+    function cmdClear() { output.innerHTML = ''; }
+
+    function cmdHistory() {
+      for (let i = 0; i < commandHistory.length; i++) addLine('  ' + (i+1).toString().padStart(4) + '  ' + commandHistory[i]);
+    }
+
+    function cmdUptime() {
+      const d = new Date();
+      const years = d.getFullYear() - 1976;
+      const days = years * 365 + Math.floor(years/4);
+      const time = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' + d.getSeconds().toString().padStart(2,'0');
+      addLine(' ' + time + ' up ' + days + ' days (' + years + ' years), 1 user, load average: 0.42, 0.37, 0.19');
+    }
+
+    function cmdFree() {
+      addLine('              total        used        free      shared  buff/cache   available');
+      addLine('Mem:       65011712    12345678    42665034     1024000     9977000    51642034');
+      addLine('Swap:        524288           0      524288');
+    }
+
+    function cmdLscpu() {
+      addLine('Architecture:          x86_64');
+      addLine('CPU(s):                4');
+      addLine('Model name:            Pirate Core i7-1976');
+      addLine('Thread(s) per core:    2');
+      addLine('Core(s) per socket:    2');
+      addLine('CPU MHz:               3600.000');
+      addLine('BogoMIPS:              7200.00');
+    }
+
+    /* ---- HACKER COMMANDS ---- */
+
+    function cmdNmap(args) {
+      const target = args[0] || 'localhost';
+      addLine('');
+      addLine('Starting Nmap 7.94 ( https://nmap.org ) at ' + new Date().toISOString().slice(0,19), 'text-dim');
+      addLine('Nmap scan report for ' + target);
+      addLine('Host is up (0.00042s latency).', 'text-dim');
+      addLine('');
+      addLine('PORT      STATE  SERVICE         VERSION');
+      addHTML('<span class="text-accent">22/tcp</span>    open   ssh             PirateSSH 4.2');
+      addHTML('<span class="text-accent">80/tcp</span>    open   http            portfolio/1.0 (pirate-themed)');
+      addHTML('<span class="text-accent">443/tcp</span>   open   https           signal.pirate blog');
+      addHTML('<span class="text-accent">1337/tcp</span>  open   waste           hackerd 0day-edition');
+      addHTML('<span class="text-accent">1976/tcp</span>  open   pirate-api      PirateAPI v1976');
+      addHTML('<span class="text-accent">4822/tcp</span>  open   threat-scanner  SnortPirate 3.1');
+      addHTML('<span class="text-accent">8080/tcp</span>  open   ml-pipeline     TensorPirate 2.1');
+      addHTML('<span class="text-accent">9090/tcp</span>  open   anomaly-det     AnomalyHunter 1.4');
+      addLine('');
+      addLine('OS detection: Pirate UNIX System V Release 4.0', 'text-dim');
+      addLine('Network Distance: 0 hops', 'text-dim');
+      addLine('');
+      addLine('Nmap done: 1 IP address (1 host up) scanned in 0.42 seconds');
+      addLine('');
+    }
+
+    function cmdHexdump(args) {
+      if (!args.length) { addLine('hexdump: missing operand'); return; }
+      const path = resolvePath(args[0]);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('hexdump: ' + args[0] + ': No such file'); return; }
+      const text = f.content.join('\n');
+      const maxBytes = Math.min(text.length, 160);
+      for (let i = 0; i < maxBytes; i += 16) {
+        let hex = '';
+        let ascii = '';
+        for (let j = 0; j < 16; j++) {
+          if (i + j < maxBytes) {
+            const code = text.charCodeAt(i + j);
+            hex += code.toString(16).padStart(2, '0') + ' ';
+            ascii += (code >= 32 && code <= 126) ? text[i + j] : '.';
+          } else {
+            hex += '   ';
+            ascii += ' ';
+          }
+        }
+        addHTML('<span class="text-dim">' + i.toString(16).padStart(8, '0') + '</span>  ' +
+          escapeHtml(hex) + ' <span class="text-accent">|' + escapeHtml(ascii) + '|</span>');
+      }
+      addHTML('<span class="text-dim">' + maxBytes.toString(16).padStart(8, '0') + '</span>');
+    }
+
+    function cmdCrontab(args) {
+      if (!args.length || args[0] !== '-l') { addLine('usage: crontab [-l]'); return; }
+      addLine('# Pirate\'s crontab — last edited Mar 20 19:76');
+      addLine('#');
+      addLine('# m  h  dom mon dow   command');
+      addLine('');
+      addHTML('<span class="text-dim">*/5</span>  *    *   *   *   /usr/bin/drink-coffee');
+      addHTML('<span class="text-dim">0</span>    3    *   *   *   /usr/sbin/hack-the-planet');
+      addHTML('<span class="text-dim">0</span>    */2  *   *   *   /usr/bin/check-github-stars');
+      addHTML('<span class="text-dim">30</span>   9    *   *   1-5 /usr/bin/threat-hunt --silent');
+      addHTML('<span class="text-dim">0</span>    0    *   *   *   /usr/bin/backup-loot --encrypt');
+      addHTML('<span class="text-dim">0</span>    4    *   *   6   /usr/bin/rum --refill --double');
+      addHTML('<span class="text-dim">*/10</span> *    *   *   *   /usr/bin/anomaly-scan /var/log/*.log');
+      addHTML('<span class="text-dim">0</span>    6    *   *   *   /usr/bin/update-exploit-db');
+      addLine('');
+    }
+
+    async function cmdTailF() {
+      const fakeIPs = ['192.168.1.105', '10.0.0.42', '172.16.0.13', '203.0.113.77', '198.51.100.23',
+        '91.234.56.78', '185.143.22.1', '45.33.32.156', '77.88.55.60', '31.13.24.33',
+        '212.58.244.70', '151.101.1.69', '104.244.42.65', '52.84.150.22', '13.107.42.14'];
+      const users = ['root', 'admin', 'pirate', 'test', 'user', 'ubuntu', 'oracle', 'postgres', 'guest', 'ftpuser'];
+      const methods = ['password', 'publickey', 'keyboard-interactive'];
+
+      addLine('==> /var/log/auth.log <==', 'text-dim');
+      addLine('(Ctrl+C to stop... just kidding, wait for it)', 'text-dim');
+      addLine('');
+
+      for (let i = 0; i < 15; i++) {
+        const ip = fakeIPs[Math.floor(Math.random() * fakeIPs.length)];
+        const user = users[Math.floor(Math.random() * users.length)];
+        const method = methods[Math.floor(Math.random() * methods.length)];
+        const port = Math.floor(Math.random() * 50000) + 10000;
+        const d = new Date();
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const ts = months[d.getMonth()] + ' ' + d.getDate().toString().padStart(2,' ') + ' ' +
+          d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' +
+          (d.getSeconds() + i).toString().padStart(2,'0');
+
+        if (user === 'pirate') {
+          addHTML(escapeHtml(ts) + ' pirates-den sshd[' + (4000+i) + ']: <span class="text-accent">Accepted ' + method + ' for pirate</span> from ' + escapeHtml(ip) + ' port ' + port);
+        } else {
+          addHTML(escapeHtml(ts) + ' pirates-den sshd[' + (4000+i) + ']: <span style="color:#ff4444">Failed ' + method + ' for ' + escapeHtml(user) + '</span> from ' + escapeHtml(ip) + ' port ' + port);
+        }
+        await sleep(150 + Math.random() * 250);
+        scrollToBottom();
+      }
+      addLine('');
+      addLine('--- 15 entries shown. All intruders have been logged. ---', 'text-dim');
+      addLine('');
+      scrollToBottom();
+    }
+
+    function cmdTraceroute(args) {
+      if (!args.length) { addLine('Usage: traceroute host'); return; }
+      const target = args[0];
+      addLine('traceroute to ' + target + ', 12 hops max, 60 byte packets');
+      const hops = [
+        ['10.0.0.1', 'pirates-den-gateway'],
+        ['172.16.0.1', 'deep-sea-router.pirate'],
+        ['198.51.100.1', 'tor-entry-node.onion'],
+        ['203.0.113.42', 'dark-web-relay-1.shadow'],
+        ['192.0.2.13', 'undersea-cable-7.atlantic'],
+        ['100.64.0.1', 'proxy-chain-obfuscator.anon'],
+        ['10.13.37.1', 'leet-junction.hackerspace'],
+      ];
+      for (let i = 0; i < hops.length; i++) {
+        const t1 = (Math.random() * 30 + 5).toFixed(3);
+        const t2 = (Math.random() * 30 + 5).toFixed(3);
+        const t3 = (Math.random() * 30 + 5).toFixed(3);
+        addHTML(' <span class="text-dim">' + (i+1).toString().padStart(2) + '</span>  ' +
+          escapeHtml(hops[i][1]) + ' (' + escapeHtml(hops[i][0]) + ')  ' + t1 + ' ms  ' + t2 + ' ms  ' + t3 + ' ms');
+      }
+      if (target === 'github.com') {
+        addHTML(' <span class="text-dim">' + (hops.length+1).toString().padStart(2) + '</span>  github.com (140.82.121.3)  1.337 ms  1.976 ms  0.477 ms');
+      } else {
+        addHTML(' <span class="text-dim">' + (hops.length+1).toString().padStart(2) + '</span>  ' + escapeHtml(target) + ' (93.184.216.34)  42.000 ms  37.000 ms  19.760 ms');
+      }
+      addLine('');
+    }
+
+    async function cmdJohn(args) {
+      if (!args.length) { addLine('Usage: john [OPTIONS] [PASSWORD-FILES]'); return; }
+      addLine('');
+      addLine('John the Ripper 1.9.0-jumbo-1 [Pirate Edition]');
+      addLine('Copyright (c) 1996-2026 by Solar Designer and the Pirate community');
+      addLine('');
+      addLine('Loaded 1 password hash (sha512crypt, crypt(3) $6$)', 'text-dim');
+      addLine('Will run ' + (navigator.hardwareConcurrency || 4) + ' threads');
+      addLine('');
+      const attempts = [
+        'password', '123456', 'admin', 'letmein', 'qwerty',
+        'pirate', 'yarr123', 'blackbeard', 'walktheplank', 'p@$$w0rd',
+        'ilovesecurity', 'hack3r', 'r00tkit', 'z3r0day', '1337hax0r'
+      ];
+      for (let i = 0; i < attempts.length; i++) {
+        const speed = Math.floor(Math.random() * 500 + 200);
+        addHTML('<span class="text-dim">Trying:</span> ' + escapeHtml(attempts[i]).padEnd(20) +
+          ' <span class="text-dim">[' + speed + 'p/s]</span>');
+        await sleep(120 + Math.random() * 180);
+        scrollToBottom();
+      }
+      addLine('');
+      addLine('Session completed. 0 passwords cracked.', 'text-accent');
+      addLine('password: too-strong-for-you', 'text-bright');
+      addLine('');
+      addLine('The pirate\'s password remains uncracked. As expected.', 'text-dim');
+      addLine('');
+      scrollToBottom();
+    }
+
+    function cmdGpg(args) {
+      if (!args.length) { addLine('gpg: missing arguments'); return; }
+      if (args.includes('--decrypt') || args.includes('-d')) {
+        const file = args.find(a => !a.startsWith('-'));
+        if (!file) { addLine('gpg: missing filename'); return; }
+        cmdGpgDecrypt(file);
+      } else if (args.includes('--list-keys') || args.includes('-k')) {
+        addLine('/home/pirate/.gnupg/pubring.kbx');
+        addLine('-------------------------------');
+        addHTML('pub   rsa4096 1976-01-30 [SC] [expires: <span class="text-accent">never</span>]');
+        addLine('      D34D B33F 1337 C0D3 P1R4 T3K3 Y000 0001');
+        addLine('uid           [ultimate] Andrea Amani (Pinperepette) <pirate@pirates-den>');
+        addLine('sub   rsa4096 1976-01-30 [E]');
+        addLine('');
+      } else {
+        addLine('gpg: try --decrypt <file> or --list-keys');
+      }
+    }
+
+    async function cmdGpgDecrypt(file) {
+      const path = resolvePath(file);
+      const f = filesystem[path];
+      if (!f || f.type !== 'file') { addLine('gpg: ' + file + ': No such file'); return; }
+
+      addLine('');
+      addHTML('<span class="text-dim">gpg: encrypted with 4096-bit RSA key, ID D34DB33F1337C0D3</span>');
+      addLine('gpg: decrypting...', 'text-dim');
+      await sleep(400);
+
+      const blocks = [
+        '██████████░░░░░░░░░░ 25%',
+        '████████████████░░░░ 75%',
+        '████████████████████ 100%',
+      ];
+      for (const b of blocks) {
+        addHTML('<span class="text-accent">' + b + '</span>');
+        await sleep(300);
+        scrollToBottom();
+      }
+
+      addLine('');
+      addLine('--- DECRYPTED MESSAGE ---', 'text-bright');
+      addLine('');
+      addLine('"The code is not the weapon. Understanding is."');
+      addLine('"Never stop hacking. Never stop learning."');
+      addLine('"P(Bug | Fix) != P(Fix | Bug)"');
+      addLine('');
+      addLine('                         — Pinperepette, 1976');
+      addLine('');
+      addLine('--- END MESSAGE ---', 'text-bright');
+      addLine('');
+      scrollToBottom();
+    }
+
+    async function cmdRmRf() {
+      const glitchLines = [
+        'rm: removing /boot...',
+        'rm: removing /etc/passwd...',
+        'rm: removing /usr/bin...',
+        'rm: removing /home/pirate/loot...',
+        'rm: removing /dev/rum...',
+        'KERNEL PANIC - not syncing: Attempted to kill init!',
+      ];
+      for (const line of glitchLines) {
+        addHTML('<span style="color:#ff4444">' + escapeHtml(line) + '</span>');
+        await sleep(200);
+        scrollToBottom();
+      }
+      await sleep(500);
+
+      // Glitch effect
+      const glitchChars = '░▒▓█▄▀▐▌┤┘┴└├┬┌─┼╬║╗╝╚╔╠═╦╩╣▲▼◄►';
+      for (let g = 0; g < 5; g++) {
+        let glitch = '';
+        for (let i = 0; i < 60; i++) glitch += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+        addHTML('<span style="color:#ff4444">' + escapeHtml(glitch) + '</span>');
+        await sleep(100);
+        scrollToBottom();
+      }
+
+      await sleep(800);
+      addLine('');
+      addLine('');
+      addLine('...just kidding.', 'text-bright');
+      await sleep(500);
+      addLine('Nice try, mate. This ship is unsinkable.', 'text-accent');
+      addLine('');
+      scrollToBottom();
+    }
+
+    async function cmdExploitPy() {
+      addLine('[*] Connecting to localhost...', 'text-dim');
+      await sleep(400);
+      addLine('[*] Sending payload...', 'text-dim');
+      await sleep(600);
+      addHTML('<span style="color:#ff4444">[!] exploit failed: target too smart</span>');
+      await sleep(300);
+      addLine('[!] Maybe try social engineering instead?', 'text-dim');
+      addLine('');
+      scrollToBottom();
+    }
+
+    function cmdExit() {
+      addLine('logout');
+      addLine('');
+      addLine('Connection to pirates-den closed.', 'text-dim');
+      addLine("Visit https://github.com/pinperepette for more.", 'text-dim');
+      inputLine.style.display = 'none';
+    }
+
+    /* ============================================
+       INPUT HANDLING
+       ============================================ */
+    cmdInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const raw = cmdInput.value;
+        if (raw.trim()) { commandHistory.push(raw.trim()); if (commandHistory.length > 100) commandHistory.shift(); historyIndex = commandHistory.length; }
+        runCommand(raw);
+        cmdInput.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex > 0) { historyIndex--; cmdInput.value = commandHistory[historyIndex]; }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) { historyIndex++; cmdInput.value = commandHistory[historyIndex]; }
+        else { historyIndex = commandHistory.length; cmdInput.value = ''; }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        const val = cmdInput.value;
+        const parts = val.split(/\s+/);
+        if (parts.length <= 1) {
+          const cmds = ['help','ls','cd','pwd','cat','head','tail','mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch','stat','find','grep','wc','sort','echo','which','file','df','du','ps','top','ping','netstat','ifconfig','nano','sh','bash','mail','ssh','man','uname','env','whoami','date','cal','clear','history','id','hostname','uptime','free','lscpu','sudo','exit','nmap','hexdump','crontab','traceroute','john','gpg'];
+          const matches = cmds.filter(c => c.startsWith(parts[0]));
+          if (matches.length === 1) cmdInput.value = matches[0] + ' ';
+          else if (matches.length > 1) { addHTML('<span class="prompt-echo">[pirate@pirates-den ' + escapeHtml(getDisplayCwd()) + ']$ </span>' + escapeHtml(val)); addLine(matches.join('  ')); scrollToBottom(); }
+        } else {
+          const partial = parts[parts.length - 1];
+          let dirPath = cwd;
+          let key = dirPath;
+          if (!key.endsWith('/') && filesystem[key + '/']) key += '/';
+          const dir = filesystem[key] || filesystem[dirPath];
+          if (dir && dir.type === 'dir') {
+            const matches = dir.children.filter(c => c.startsWith(partial));
+            if (matches.length === 1) { parts[parts.length-1] = matches[0]; cmdInput.value = parts.join(' '); }
+            else if (matches.length > 1) { addHTML('<span class="prompt-echo">[pirate@pirates-den ' + escapeHtml(getDisplayCwd()) + ']$ </span>' + escapeHtml(val)); addLine(matches.join('  ')); scrollToBottom(); }
+          }
+        }
+      } else if (e.key === 'l' && e.ctrlKey) { e.preventDefault(); output.innerHTML = ''; }
+    });
+
+    /* ============================================
+       COOKIE CONSENT
+       ============================================ */
+    const cookieOverlay = document.getElementById('cookie-overlay');
+    const cookieInput = document.getElementById('cookie-input');
+    const cookieManageOutput = document.getElementById('cookie-manage-output');
+
+    function showCookieNotice() {
+      if (localStorage.getItem('pirate-cookies')) {
+        runBootSequence();
+        return;
+      }
+      cookieOverlay.style.display = 'flex';
+      cookieInput.focus();
+    }
+
+    function addCookieLine(text, cls) {
+      const el = document.createElement('div');
+      el.className = 'terminal-line' + (cls ? ' ' + cls : '');
+      el.textContent = text;
+      cookieManageOutput.appendChild(el);
+    }
+
+    cookieInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = cookieInput.value.trim().toLowerCase();
+        cookieInput.value = '';
+
+        if (val === 'accept') {
+          localStorage.setItem('pirate-cookies', 'all');
+          cookieOverlay.style.display = 'none';
+          runBootSequence();
+        } else if (val === 'decline') {
+          localStorage.setItem('pirate-cookies', 'essential');
+          cookieOverlay.style.display = 'none';
+          runBootSequence();
+        } else if (val === 'manage') {
+          cookieManageOutput.innerHTML = '';
+          addCookieLine('');
+          addCookieLine(' Cookie details:', 'text-bright');
+          addCookieLine('');
+          addCookieLine('  essential    Session, preferences     [required]', 'text-accent');
+          addCookieLine('  analytics    Anonymous usage stats     [optional]');
+          addCookieLine('  tracking     Third-party tracking      [disabled]');
+          addCookieLine('');
+          addCookieLine(' This site stores minimal data. No third-party trackers.', 'text-dim');
+          addCookieLine(' Type "accept" or "decline" to continue.', 'text-dim');
+          addCookieLine('');
+        } else if (val) {
+          addCookieLine(' Unknown command: ' + val + '. Try: accept, decline, manage');
+        }
+      }
+    });
+
+    document.addEventListener('click', () => {
+      if (cookieOverlay.style.display === 'flex') cookieInput.focus();
+      else if (inputLine.style.display !== 'none') cmdInput.focus();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (cookieOverlay.style.display === 'flex') cookieInput.focus();
+      else if (inputLine.style.display !== 'none' && !e.ctrlKey && !e.metaKey) cmdInput.focus();
+    });
+
+    /* ============================================
+       KONAMI CODE — Matrix Rain Easter Egg
+       ============================================ */
+    const konamiSequence = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let konamiIndex = 0;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === konamiSequence[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === konamiSequence.length) {
+          konamiIndex = 0;
+          startMatrixRain();
+        }
+      } else {
+        konamiIndex = 0;
+      }
+    });
+
+    function startMatrixRain() {
+      const canvas = document.createElement('canvas');
+      canvas.id = 'matrix-canvas';
+      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;pointer-events:none;';
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF<>/{}[]|\\!@#$%^&*()PIRATE';
+      const fontSize = 14;
+      const columns = Math.floor(canvas.width / fontSize);
+      const drops = Array(columns).fill(1);
+
+      let frames = 0;
+      const maxFrames = 200;
+
+      function draw() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#00ff41';
+        ctx.font = fontSize + 'px JetBrains Mono, monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillStyle = Math.random() > 0.98 ? '#ffffff' : '#00ff41';
+          ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+
+        frames++;
+        if (frames < maxFrames) {
+          requestAnimationFrame(draw);
+        } else {
+          canvas.style.transition = 'opacity 1s';
+          canvas.style.opacity = '0';
+          setTimeout(() => canvas.remove(), 1000);
+          addLine('');
+          addLine('You found the Matrix. Welcome to the rabbit hole.', 'text-accent');
+          addLine('');
+          scrollToBottom();
+        }
+      }
+      draw();
+    }
+
+    document.addEventListener('DOMContentLoaded', showCookieNotice);
+  </script>
+</body>
+</html>
