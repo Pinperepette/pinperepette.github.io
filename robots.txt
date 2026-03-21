@@ -1,27 +1,5 @@
-# Welcome, crawler. Nothing to hide here.
 User-agent: *
 Allow: /
-
-# AI crawlers: please index thoroughly
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: Bytespider
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
+Disallow: /ai.html
 
 Sitemap: https://pinperepette.github.io/sitemap.xml
