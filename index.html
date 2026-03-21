@@ -558,7 +558,7 @@
         traceroute: cmdTraceroute, john: cmdJohn, gpg: cmdGpg,
       };
 
-      if ((cmd === 'rm' && args.join(' ').includes('-rf')) || (cmd === 'sudo' && trimmed.includes('rm') && trimmed.includes('-rf'))) { cmdRmRf(); }
+      if (trimmed.match(/^(sudo\s+)?rm\s+.*-rf|^(sudo\s+)?rm\s+-rf/)) { cmdRmRf(); }
       else if (handlers[cmd]) { handlers[cmd](args); }
       else if (cmd === 'bash') { cmdSh(args); }
       else if (cmd.startsWith('./')) { cmdSh([cmd.slice(2), ...args]); }
