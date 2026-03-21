@@ -587,66 +587,78 @@
     function cmdHelp() {
       addLine('');
       addLine(' Available commands (Pirate UNIX SVR4):', 'text-bright');
-      addLine('');
-      const cmds = [
-        ['ls [-lah] [dir]',     'List directory contents'],
-        ['cd <dir>',            'Change directory'],
-        ['pwd',                 'Print working directory'],
-        ['cat <file>',          'Display file contents'],
-        ['bat <file>',          'Display file with syntax highlighting'],
-        ['head/tail <file>',    'First/last lines'],
-        ['mkdir [-p] <dir>',    'Create a directory'],
-        ['rmdir <dir>',         'Remove empty directory'],
-        ['rm [-rf] <file>',     'Remove files/directories'],
-        ['cp [-r] src dst',     'Copy files'],
-        ['mv src dst',          'Move/rename files'],
-        ['ln [-s] src dst',     'Create link'],
-        ['chmod mode file',     'Change permissions'],
-        ['chown own file',      'Change owner'],
-        ['touch <file>',        'Create/update file'],
-        ['stat <file>',         'File status'],
-        ['find [path] ...',     'Search files'],
-        ['grep pat file',       'Search in files'],
-        ['wc <file>',           'Word/line count'],
-        ['sort <file>',         'Sort lines'],
-        ['echo <text>',         'Print text'],
-        ['which <cmd>',         'Locate command'],
-        ['file <path>',         'Identify file type'],
-        ['df',                  'Disk usage'],
-        ['du [path]',           'Directory size'],
-        ['ps [-ef]',            'List processes'],
-        ['top',                 'Resource monitor'],
-        ['ping <host>',         'Ping host'],
-        ['netstat',             'Network connections'],
-        ['ifconfig',            'Network interfaces'],
-        ['nano <file>',         'Text editor'],
-        ['sh <script>',         'Execute shell script'],
-        ['nmap <host>',         'Port scan (simulated)'],
-        ['hexdump <file>',      'Hex dump of file'],
-        ['crontab -l',          'List scheduled jobs'],
-        ['traceroute <host>',   'Trace packet route'],
-        ['john <file>',         'Password cracker (good luck)'],
-        ['gpg --decrypt <f>',   'Decrypt PGP message'],
-        ['mail',                'Open mail client'],
-        ['ssh github',          'Open GitHub profile'],
-        ['man <cmd>',           'Show manual page'],
-        ['uname [-a]',          'System info'],
-        ['env',                 'Environment variables'],
-        ['whoami',              'User info'],
-        ['date',                'Current date/time'],
-        ['cal',                 'Calendar'],
-        ['uptime',              'System uptime'],
-        ['free',                'Memory usage'],
-        ['history',             'Command history'],
-        ['clear',               'Clear terminal'],
-        ['help',                'This help'],
+
+      const pad = 24;
+      const sections = [
+        ['FILES & NAVIGATION', [
+          ['ls [-lah] [dir]',      'List directory contents'],
+          ['cd <dir>',             'Change directory'],
+          ['pwd',                  'Print working directory'],
+          ['cat <file>',           'Display file contents'],
+          ['bat <file>',           'Syntax-highlighted view'],
+          ['head/tail <file>',     'First/last lines'],
+          ['stat <file>',          'File status'],
+          ['find [path]',          'Search files'],
+          ['grep <pat> <file>',    'Search in files'],
+          ['wc <file>',            'Word/line count'],
+          ['hexdump <file>',       'Hex dump of file'],
+          ['nano <file>',          'Text editor'],
+          ['file <path>',          'Identify file type'],
+        ]],
+        ['SCRIPTS & EXECUTION', [
+          ['sh/bash <script>',     'Execute shell script'],
+          ['./<script>',           'Run script directly'],
+          ['python <script>',      'Run Python script'],
+        ]],
+        ['SECURITY & HACKING', [
+          ['nmap <host>',          'Port scan'],
+          ['traceroute <host>',    'Trace packet route'],
+          ['john <file>',          'Password cracker'],
+          ['gpg --decrypt <file>', 'Decrypt PGP message'],
+          ['gpg --list-keys',      'List PGP keys'],
+          ['tail -f',              'Live auth.log stream'],
+        ]],
+        ['SYSTEM', [
+          ['ps / top',             'Processes / monitor'],
+          ['df / du',              'Disk / directory usage'],
+          ['free',                 'Memory usage'],
+          ['uname [-a]',           'System info'],
+          ['env',                  'Environment variables'],
+          ['crontab -l',           'Scheduled jobs'],
+          ['lscpu',                'CPU info'],
+          ['uptime',               'System uptime'],
+        ]],
+        ['NETWORK', [
+          ['ping <host>',          'Ping host'],
+          ['netstat',              'Network connections'],
+          ['ifconfig',             'Network interfaces'],
+          ['ssh github',           'Open GitHub profile'],
+          ['mail',                 'Contact info'],
+        ]],
+        ['OTHER', [
+          ['whoami',               'User info'],
+          ['id',                   'User identity'],
+          ['hostname',             'System hostname'],
+          ['date / cal',           'Date / calendar'],
+          ['man <cmd>',            'Manual page'],
+          ['which <cmd>',          'Locate command'],
+          ['echo <text>',          'Print text'],
+          ['history',              'Command history'],
+          ['clear',                'Clear terminal'],
+          ['help',                 'This help'],
+        ]],
       ];
-      for (const [c, d] of cmds) {
-        addHTML('  <span class="text-accent">' + escapeHtml(c.padEnd(20)) + '</span>' + escapeHtml(d));
+
+      for (const [title, cmds] of sections) {
+        addLine('');
+        addHTML(' <span class="text-bright">── ' + title + ' ──</span>');
+        for (const [c, d] of cmds) {
+          addHTML('  <span class="text-accent">' + escapeHtml(c.padEnd(pad)) + '</span>' + escapeHtml(d));
+        }
       }
       addLine('');
-      addLine(" Tip: try 'bat about.txt', 'nmap localhost', './scan.sh', 'gpg --decrypt message.txt.gpg'", 'text-dim');
-      addLine("      'tail -f /var/log/auth.log', 'john shadow.txt', 'traceroute github.com'", 'text-dim');
+      addLine(" Tip: try 'nmap localhost', './scan.sh', 'gpg --decrypt message.txt.gpg'", 'text-dim');
+      addLine("      'tail -f', 'john shadow.txt', 'traceroute github.com', 'rm -rf /'", 'text-dim');
       addLine('');
     }
 
