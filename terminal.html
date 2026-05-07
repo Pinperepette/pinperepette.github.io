@@ -173,7 +173,7 @@
         content: [
           '# ~/.bashrc — Pirate\'s Den config',
           'export PS1="[pirate@pirates-den \\W]\\$ "',
-          'export EDITOR=nano',
+          'export EDITOR=vim',
           'export LANG=en_US.UTF-8',
           'export PIRATE_MODE=always',
           'alias ll="ls -lah"',
@@ -556,7 +556,8 @@
         grep: cmdGrep, wc: cmdWc, echo: cmdEcho, which: cmdWhich,
         file: cmdFile, df: cmdDf, du: cmdDu, ps: cmdPs, top: cmdTop,
         ping: cmdPing, netstat: cmdNetstat, ifconfig: cmdIfconfig,
-        nano: cmdNano, sh: cmdSh, mail: cmdMail, ssh: cmdSsh,
+        nano: cmdNano, vim: cmdVim, vi: cmdVim, nvim: cmdNvim,
+        sh: cmdSh, mail: cmdMail, ssh: cmdSsh,
         man: cmdMan, uname: cmdUname, env: cmdEnv, whoami: cmdWhoami,
         id: cmdId, hostname: cmdHostname, date: cmdDate, cal: cmdCal,
         clear: cmdClear, history: cmdHistory, uptime: cmdUptime,
@@ -575,7 +576,7 @@
       else if (cmd === 'su') { addLine('su: Authentication failure'); }
       else if (cmd === 'hack') { addLine('Nice try.'); }
       else if (['wget','curl'].includes(cmd)) { addLine(cmd + ': network requests disabled in web terminal'); }
-      else if (['vi','vim','emacs'].includes(cmd)) { addLine(cmd + ': not available, use nano'); }
+      else if (cmd === 'emacs') { addLine('emacs: not available on this ship. Use vim, nvim, or nano like a civilized pirate.'); }
       else if (['python','python3'].includes(cmd)) {
         if (args.length && args[0] === 'exploit.py') { cmdExploitPy(); }
         else { addLine('Python 3.11.7 (pirates-den)'); addLine('>>> Not a real interpreter. But nice try, mate.'); }
@@ -610,7 +611,9 @@
           ['grep <pat> <file>',    'Search in files'],
           ['wc <file>',            'Word/line count'],
           ['hexdump <file>',       'Hex dump of file'],
-          ['nano <file>',          'Text editor'],
+          ['nano <file>',          'Text editor (beginner)'],
+          ['vim/vi <file>',         'Vim — the one true editor'],
+          ['nvim <file>',           'Neovim with LSP & Treesitter'],
           ['file <path>',          'Identify file type'],
         ]],
         ['SCRIPTS & EXECUTION', [
@@ -881,7 +884,7 @@
 
     function cmdWhich(args) {
       if (!args.length) { addLine('which: missing argument'); return; }
-      const bins = ['ls','cd','pwd','cat','head','tail','grep','find','echo','man','ps','top','ping','ssh','nano','sh','bash','date','cal','clear','whoami','uname','env','df','du','ifconfig','netstat','free','uptime','wc','sort','stat','file','which','history','id','hostname','mail','nmap','hexdump','crontab','traceroute','john','gpg'];
+      const bins = ['ls','cd','pwd','cat','head','tail','grep','find','echo','man','ps','top','ping','ssh','nano','vim','vi','nvim','sh','bash','date','cal','clear','whoami','uname','env','df','du','ifconfig','netstat','free','uptime','wc','sort','stat','file','which','history','id','hostname','mail','nmap','hexdump','crontab','traceroute','john','gpg'];
       addLine(bins.includes(args[0]) ? '/usr/bin/' + args[0] : args[0] + ' not found');
     }
 
@@ -994,14 +997,231 @@
       if (!args.length) { addLine('nano: missing filename'); return; }
       const path = resolvePath(args[0]);
       const f = filesystem[path];
-      if (!f || f.type !== 'file') { addLine('nano: ' + args[0] + ': No such file'); return; }
+      const exists = f && f.type === 'file';
+      const fname = args[0];
       addLine('');
-      addLine('  GNU nano 7.2             ' + args[0], 'text-bright');
+      addHTML(
+        '<div class="editor-block">' +
+          '<div class="nano-titlebar">' +
+            '<span class="nano-version">  GNU nano 7.2</span>' +
+            '<span class="nano-file">' + escapeHtml(fname) + '</span>' +
+            '<span class="nano-mod">' + (exists ? '' : 'New File') + '</span>' +
+          '</div>' +
+          '<div class="nano-body">' +
+            (exists
+              ? f.content.map(l => linkify(l) || '&nbsp;').join('<br>')
+              : '<span style="color:#888">[ New File ]</span>') +
+          '</div>' +
+          '<div class="nano-shortcuts">' +
+            '<span class="key">^G</span>Help ' +
+            '<span class="key">^O</span>Write Out ' +
+            '<span class="key">^W</span>Where Is ' +
+            '<span class="key">^K</span>Cut ' +
+            '<span class="key">^X</span>Exit' +
+          '</div>' +
+        '</div>'
+      );
       addLine('');
-      for (const line of f.content) addHTML(linkify(line));
+    }
+
+    function vimRenderLine(num, content, gutterCls, contentCls, lineCls) {
+      return '<div class="' + lineCls + '">' +
+        '<span class="' + gutterCls + '">' + num + '</span>' +
+        '<span class="' + contentCls + '">' + (content || '&nbsp;') + '</span>' +
+        '</div>';
+    }
+
+    function cmdVim(args) {
       addLine('');
-      addLine('  [ Read ' + f.content.length + ' lines ]', 'text-dim');
-      addLine('  ^X Exit    ^O Write Out    ^W Where Is    ^K Cut', 'text-dim');
+      const fname = args[0] || '';
+      const path = fname ? resolvePath(fname) : null;
+      const f = path ? filesystem[path] : null;
+      const exists = f && f.type === 'file';
+      let body = '';
+
+      if (!fname) {
+        // Empty splash buffer
+        const splash = [
+          '', '', '',
+          '              VIM - Vi IMproved',
+          '',
+          '                 version 9.1.0',
+          '            by Bram Moolenaar et al.',
+          '      Vim is open source and freely distributable',
+          '',
+          '       type  :q<Enter>               to exit',
+          '       type  :help<Enter>            for on-line help',
+          '       type  :help version9<Enter>   for version info',
+          '',
+        ];
+        for (const s of splash) {
+          body += '<div class="vim-line"><span class="vim-gutter vim-tilde">~</span>' +
+                  '<span class="vim-content">' + escapeHtml(s) + '</span></div>';
+        }
+        body +=
+          '<div class="vim-statusline">' +
+            '<span>[No Name]</span><span>0,0-1   All</span>' +
+          '</div>' +
+          '<div class="vim-modeline"><span class="vim-cursor">&nbsp;</span></div>';
+        addHTML('<div class="editor-block">' + body + '</div>');
+        addLine('');
+        return;
+      }
+
+      if (!exists) {
+        // New file: show INSERT mode with cursor on first empty line
+        body += vimRenderLine('1', '<span class="vim-cursor">&nbsp;</span>', 'vim-gutter', 'vim-content', 'vim-line');
+        for (let i = 0; i < 8; i++) {
+          body += '<div class="vim-line"><span class="vim-gutter vim-tilde">~</span>' +
+                  '<span class="vim-content">&nbsp;</span></div>';
+        }
+        body +=
+          '<div class="vim-statusline">' +
+            '<span>"' + escapeHtml(fname) + '" [New File]</span><span>1,1   All</span>' +
+          '</div>' +
+          '<div class="vim-modeline"><span class="vim-mode-tag">-- INSERT --</span></div>';
+        addHTML('<div class="editor-block">' + body + '</div>');
+        addLine('');
+        return;
+      }
+
+      // Existing file: NORMAL mode, line numbers, tildes, statusline
+      const total = f.content.length;
+      for (let i = 0; i < total; i++) {
+        const num = String(i + 1).padStart(3, ' ');
+        let content = linkify(f.content[i]);
+        if (i === 0) {
+          // Place a block cursor on the first character
+          const raw = f.content[0];
+          if (raw && raw.length) {
+            const first = escapeHtml(raw[0]);
+            const rest = linkify(raw.slice(1));
+            content = '<span class="vim-cursor">' + first + '</span>' + rest;
+          } else {
+            content = '<span class="vim-cursor">&nbsp;</span>';
+          }
+        }
+        body += '<div class="vim-line">' +
+                '<span class="vim-gutter">' + num + '</span>' +
+                '<span class="vim-content">' + content + '</span>' +
+                '</div>';
+      }
+      const tildeCount = Math.max(0, 6 - total);
+      for (let i = 0; i < tildeCount; i++) {
+        body += '<div class="vim-line"><span class="vim-gutter vim-tilde">~</span>' +
+                '<span class="vim-content">&nbsp;</span></div>';
+      }
+      const bytes = f.content.join('\n').length;
+      body +=
+        '<div class="vim-statusline">' +
+          '<span>"' + escapeHtml(fname) + '" ' + total + 'L, ' + bytes + 'B</span>' +
+          '<span>1,1   Top</span>' +
+        '</div>' +
+        '<div class="vim-modeline">' +
+          '<span class="vim-mode-tag">-- NORMAL --</span>' +
+          '<span style="color:#888">:q to quit  :w to write  /pattern to search</span>' +
+        '</div>';
+      addHTML('<div class="editor-block">' + body + '</div>');
+      addLine('');
+    }
+
+    function cmdNvim(args) {
+      addLine('');
+      const fname = args[0] || '';
+      const path = fname ? resolvePath(fname) : null;
+      const f = path ? filesystem[path] : null;
+      const exists = f && f.type === 'file';
+      let body = '';
+
+      if (!fname) {
+        const splash = [
+          '',
+          '                  Nvim',
+          '',
+          '          v0.10.2  -  Build type: Release',
+          '          LuaJIT 2.1.1713484068',
+          '',
+          '   Nvim is open source and freely distributable',
+          '         https://neovim.io/community',
+          '',
+          '   type  :help nvim<Enter>       if you are new!',
+          '   type  :checkhealth<Enter>     to optimize Nvim',
+          '   type  :q<Enter>               to exit',
+          '',
+        ];
+        for (const s of splash) {
+          body += '<div class="nvim-line"><span class="nvim-gutter nvim-tilde">~ <span class="sep">│</span></span>' +
+                  '<span class="nvim-content">' + escapeHtml(s) + '</span></div>';
+        }
+        body +=
+          '<div class="nvim-statusline">' +
+            '<span class="seg nvim-seg-mode">NORMAL</span>' +
+            '<span class="seg nvim-seg-file">[No Name]</span>' +
+            '<span class="seg nvim-seg-mid"></span>' +
+            '<span class="seg nvim-seg-lsp">LSP </span>' +
+            '<span class="seg nvim-seg-pos">0:0  All</span>' +
+          '</div>';
+        addHTML('<div class="editor-block">' + body + '</div>');
+        addLine('');
+        return;
+      }
+
+      if (!exists) {
+        body += '<div class="nvim-line">' +
+                '<span class="nvim-gutter">  1 <span class="sep">│</span></span>' +
+                '<span class="nvim-content"><span class="nvim-cursor">&nbsp;</span></span></div>';
+        for (let i = 0; i < 8; i++) {
+          body += '<div class="nvim-line"><span class="nvim-gutter nvim-tilde">~ <span class="sep">│</span></span>' +
+                  '<span class="nvim-content">&nbsp;</span></div>';
+        }
+        body +=
+          '<div class="nvim-statusline">' +
+            '<span class="seg nvim-seg-mode" style="background:#e5c07b">INSERT</span>' +
+            '<span class="seg nvim-seg-file">' + escapeHtml(fname) + ' [+]</span>' +
+            '<span class="seg nvim-seg-mid"></span>' +
+            '<span class="seg nvim-seg-lsp">LSP ⏵ ready</span>' +
+            '<span class="seg nvim-seg-pos">1:1  Top</span>' +
+          '</div>';
+        addHTML('<div class="editor-block">' + body + '</div>');
+        addLine('');
+        return;
+      }
+
+      const total = f.content.length;
+      for (let i = 0; i < total; i++) {
+        const num = String(i + 1).padStart(3, ' ');
+        let content = linkify(f.content[i]);
+        if (i === 0) {
+          const raw = f.content[0];
+          if (raw && raw.length) {
+            const first = escapeHtml(raw[0]);
+            const rest = linkify(raw.slice(1));
+            content = '<span class="nvim-cursor">' + first + '</span>' + rest;
+          } else {
+            content = '<span class="nvim-cursor">&nbsp;</span>';
+          }
+        }
+        body += '<div class="nvim-line">' +
+                '<span class="nvim-gutter">' + num + ' <span class="sep">│</span></span>' +
+                '<span class="nvim-content">' + content + '</span>' +
+                '</div>';
+      }
+      const tildeCount = Math.max(0, 6 - total);
+      for (let i = 0; i < tildeCount; i++) {
+        body += '<div class="nvim-line"><span class="nvim-gutter nvim-tilde">~ <span class="sep">│</span></span>' +
+                '<span class="nvim-content">&nbsp;</span></div>';
+      }
+      const ext = (fname.split('.').pop() || '').toLowerCase();
+      const ft = {md:'markdown',js:'javascript',ts:'typescript',py:'python',sh:'bash',c:'c',h:'c',html:'html',css:'css',json:'json',yml:'yaml',yaml:'yaml'}[ext] || 'text';
+      body +=
+        '<div class="nvim-statusline">' +
+          '<span class="seg nvim-seg-mode">NORMAL</span>' +
+          '<span class="seg nvim-seg-file">' + escapeHtml(fname) + '</span>' +
+          '<span class="seg nvim-seg-mid"></span>' +
+          '<span class="seg nvim-seg-lsp">LSP ⏵ ready  TS ' + ft + '</span>' +
+          '<span class="seg nvim-seg-pos">1:1  ' + total + 'L  Top</span>' +
+        '</div>';
+      addHTML('<div class="editor-block">' + body + '</div>');
       addLine('');
     }
 
@@ -1317,7 +1537,7 @@
       addLine('TERM=xterm-256color');
       addLine('HOSTNAME=pirates-den');
       addLine('LANG=en_US.UTF-8');
-      addLine('EDITOR=nano');
+      addLine('EDITOR=vim');
       addLine('REAL_NAME=Andrea Amani');
       addLine('ALIAS=Pinperepette');
       addLine('ROLE=Security Engineer');
@@ -1709,7 +1929,7 @@
         const val = cmdInput.value;
         const parts = val.split(/\s+/);
         if (parts.length <= 1) {
-          const cmds = ['help','ls','cd','pwd','cat','head','tail','mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch','stat','find','grep','wc','sort','echo','which','file','df','du','ps','top','ping','netstat','ifconfig','nano','sh','bash','mail','ssh','man','uname','env','whoami','date','cal','clear','history','id','hostname','uptime','free','lscpu','sudo','exit','nmap','hexdump','crontab','traceroute','john','gpg','lynx','w3m','links'];
+          const cmds = ['help','ls','cd','pwd','cat','head','tail','mkdir','rmdir','rm','cp','mv','ln','chmod','chown','touch','stat','find','grep','wc','sort','echo','which','file','df','du','ps','top','ping','netstat','ifconfig','nano','vim','vi','nvim','sh','bash','mail','ssh','man','uname','env','whoami','date','cal','clear','history','id','hostname','uptime','free','lscpu','sudo','exit','nmap','hexdump','crontab','traceroute','john','gpg','lynx','w3m','links'];
           const matches = cmds.filter(c => c.startsWith(parts[0]));
           if (matches.length === 1) cmdInput.value = matches[0] + ' ';
           else if (matches.length > 1) { addHTML('<span class="prompt-echo">[pirate@pirates-den ' + escapeHtml(getDisplayCwd()) + ']$ </span>' + escapeHtml(val)); addLine(matches.join('  ')); scrollToBottom(); }
