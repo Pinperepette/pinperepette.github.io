@@ -204,7 +204,12 @@ body {
   margin: 0.4em 0;
   font-family: 'JetBrains Mono', monospace;
   line-height: 1.4;
+  white-space: normal;
+  display: block;
 }
+.editor-block .vim-content,
+.editor-block .nvim-content,
+.editor-block .nano-body { white-space: pre-wrap; }
 
 /* nano: green-on-black inverted bars top & bottom */
 .nano-titlebar {
