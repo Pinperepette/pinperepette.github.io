@@ -2,4 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /ai.html
 
+# signal.pirate: cartelle di lavoro servite raw (.nojekyll) ma senza valore SEO.
+# Niente canonical -> Google le marca come duplicati/no-canonical su Search Console.
+Disallow: /signal.pirate/scripts/
+Disallow: /signal.pirate/output/
+
 Sitemap: https://pinperepette.github.io/sitemap.xml
