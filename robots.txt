@@ -8,3 +8,4 @@ Disallow: /signal.pirate/scripts/
 Disallow: /signal.pirate/output/
 
 Sitemap: https://pinperepette.github.io/sitemap.xml
+Sitemap: https://pinperepette.github.io/signal.pirate/sitemap.xml
