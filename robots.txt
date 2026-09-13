@@ -6,6 +6,7 @@ Disallow: /ai.html
 # Niente canonical -> Google le marca come duplicati/no-canonical su Search Console.
 Disallow: /signal.pirate/scripts/
 Disallow: /signal.pirate/output/
+Disallow: /signal.pirate/xss2shell-lab/
 
 Sitemap: https://pinperepette.github.io/sitemap.xml
 Sitemap: https://pinperepette.github.io/signal.pirate/sitemap.xml
